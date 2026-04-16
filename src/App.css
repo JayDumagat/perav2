@@ -34,7 +34,7 @@
   width: 32px;
   height: 32px;
   background: var(--accent);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -550,7 +550,7 @@
 }
 
 .dropdown-item.danger:hover {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* ── CONTENT AREA ───────────────────────────────────── */

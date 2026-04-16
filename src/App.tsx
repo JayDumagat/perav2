@@ -459,7 +459,7 @@ function App() {
               {authStep === 'onboarding' && 'Set up your profile'}
             </h1>
             <p>
-              {authStep === 'login' && 'Please continue to sign in to your business account'}
+              {authStep === 'login' && 'Please continue to sign in to your investing account'}
               {authStep === 'register' && 'Create your account in a guided, minimal flow'}
               {authStep === 'onboarding' && 'Set your investing profile and initial setup path'}
             </p>
