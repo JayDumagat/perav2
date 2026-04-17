@@ -907,6 +907,17 @@ function App() {
     learningModalRef.current?.focus()
   }, [selectedLearningContentId])
 
+  useEffect(() => {
+    if (!selectedLearningContentId) return
+    function handleEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setSelectedLearningContentId(null)
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [selectedLearningContentId])
+
   const mainNav = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
     { id: 'trading', label: 'Trading', icon: <TradingIcon /> },
@@ -2087,19 +2098,10 @@ function App() {
       </div>
 
       {selectedLearningContent && (
-        <div
-          className="learning-modal-overlay"
-          onClick={() => setSelectedLearningContentId(null)}
-          role="presentation"
-        >
+        <div className="learning-modal-overlay" onClick={() => setSelectedLearningContentId(null)}>
           <div
             className="card learning-modal"
             onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                setSelectedLearningContentId(null)
-              }
-            }}
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
