@@ -1502,12 +1502,77 @@ label {
   --learning-card-accent: #00b4c6;
   --learning-card-overlay-start: rgba(3, 38, 45, 0.2);
   --learning-card-overlay-end: rgba(3, 38, 45, 0.94);
+  background:
+    linear-gradient(160deg, rgba(4, 35, 42, 0.96), rgba(2, 23, 30, 0.94));
+  box-shadow:
+    0 22px 42px -30px rgba(0, 180, 198, 0.62),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.learning-content-card--module::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(181, 250, 255, 0.52);
+  background:
+    linear-gradient(145deg, rgba(122, 245, 255, 0.34), rgba(0, 180, 198, 0.12));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.learning-content-card--module::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 68px;
+  width: 44px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(181, 250, 255, 0.44);
+  pointer-events: none;
 }
 
 .learning-content-card--game {
   --learning-card-accent: #9a63ff;
   --learning-card-overlay-start: rgba(33, 12, 69, 0.2);
   --learning-card-overlay-end: rgba(33, 12, 69, 0.95);
+  background:
+    radial-gradient(circle at 14% 16%, rgba(186, 138, 255, 0.28), transparent 48%),
+    linear-gradient(160deg, rgba(33, 13, 72, 0.96), rgba(18, 9, 45, 0.94));
+  box-shadow:
+    0 24px 46px -30px rgba(154, 99, 255, 0.68),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.learning-content-card--game::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 64px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 218, 255, 0.4);
+  background: linear-gradient(90deg, rgba(186, 138, 255, 0.86), rgba(154, 99, 255, 0.24));
+  pointer-events: none;
+}
+
+.learning-content-card--game::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(234, 218, 255, 0.4);
+  background: rgba(39, 20, 82, 0.58);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
 }
 
 .learning-content-image {
@@ -1534,7 +1599,7 @@ label {
   inset: 0;
   display: grid;
   align-content: end;
-  gap: 10px;
+  gap: 12px;
   padding: 14px;
   color: var(--learning-overlay-text-color);
   background: linear-gradient(
@@ -1548,10 +1613,15 @@ label {
 .learning-content-overlay h4,
 .learning-content-overlay p {
   color: var(--learning-overlay-text-color);
+  margin: 0;
 }
 
 .learning-content-overlay .learning-content-meta {
   color: var(--learning-overlay-muted-text);
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
 }
 
 .learning-content-overlay .learning-chip {
@@ -1575,8 +1645,8 @@ label {
 .learning-content-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 11px;
   color: var(--text-soft);
 }
 
@@ -1589,8 +1659,44 @@ label {
   background: color-mix(in srgb, var(--accent-muted) 65%, transparent);
 }
 
+.learning-topic-chip {
+  padding: 2px 0;
+  font-weight: 600;
+}
+
+.learning-content-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.learning-content-duration {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--learning-overlay-muted-text);
+}
+
+.learning-content-body {
+  display: grid;
+  gap: 6px;
+}
+
+.learning-content-body h4 {
+  font-size: 18px;
+  line-height: 1.22;
+}
+
+.learning-content-body p {
+  font-size: 13px;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--learning-overlay-muted-text) 88%, white 12%);
+}
+
 .learning-progress-row {
-  margin-top: auto;
+  width: 100%;
 }
 
 .learning-content-footer {
@@ -1598,10 +1704,6 @@ label {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-}
-
-.learning-content-footer small {
-  color: var(--text-soft);
 }
 
 .learning-reaction-group {
