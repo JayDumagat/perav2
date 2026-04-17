@@ -1081,6 +1081,7 @@ label {
   background:
     radial-gradient(120% 130% at 100% 0%, rgba(45, 212, 191, 0.2), transparent 55%),
     linear-gradient(150deg, var(--panel), var(--panel-strong));
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
 }
 

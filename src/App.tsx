@@ -484,6 +484,19 @@ function chartPath(points: number[]) {
 }
 
 const PERA_PROJECTION_YEARS = 25
+const DEFAULT_CHART_MAX_VALUE = 1
+const SEED_CONTRIB_BASE_MULTIPLIER = 0.85
+const SEED_CONTRIB_STEP_MULTIPLIER = 0.03
+const SEED_HOLDING_BASE_MULTIPLIER = 0.38
+const SEED_HOLDING_STEP_MULTIPLIER = 0.06
+const PRIMARY_SEEDED_FUND_INDEX = 0
+const SEED_FUND_NAME_PREFIX = 'Starter PERA Core Fund'
+const DEFAULT_FUND_COLOR = '#6ee7b7'
+const FUND_TYPE_COLORS: Record<string, string> = {
+  Balanced: '#2dd4bf',
+  Equity: '#34d399',
+  Bond: DEFAULT_FUND_COLOR,
+}
 
 function growthProjection(current: number, monthly: number, years: number, annualReturn: number) {
   const months = years * 12
@@ -493,6 +506,15 @@ function growthProjection(current: number, monthly: number, years: number, annua
     value = value * (1 + monthlyRate) + monthly
   }
   return value
+}
+
+function getScalingFactor(seedNumber: number, baseMultiplier: number, stepMultiplier: number) {
+  return baseMultiplier + seedNumber * stepMultiplier
+}
+
+function safePercentage(numerator: number, denominator: number) {
+  if (denominator <= 0) return 0
+  return Math.round((numerator / denominator) * 100)
 }
 
 function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) {
@@ -583,33 +605,33 @@ function App() {
     () => growthProjection(32600, monthlyContribution, PERA_PROJECTION_YEARS, annualReturn),
     [annualReturn, monthlyContribution],
   )
-  const activePeraAccount = useMemo(
-    () => peraAccounts.find((account) => account.id === activePeraAccountId) ?? peraAccounts[0],
-    [activePeraAccountId, peraAccounts],
-  )
-  const activePeraHoldings = useMemo(
-    () => peraHoldingsByAccount[activePeraAccount?.id] ?? [],
-    [activePeraAccount?.id, peraHoldingsByAccount],
-  )
-  const activePeraContrib = useMemo(
-    () => peraContribByAccount[activePeraAccount?.id] ?? [],
-    [activePeraAccount?.id, peraContribByAccount],
-  )
+  const activePeraAccount = useMemo(() => peraAccounts.find((account) => account.id === activePeraAccountId) ?? null, [activePeraAccountId, peraAccounts])
+  const activePeraHoldings = useMemo<PeraHolding[]>(() => {
+    if (!activePeraAccount) return []
+    return peraHoldingsByAccount[activePeraAccount.id] ?? []
+  }, [activePeraAccount, peraHoldingsByAccount])
+  const activePeraContrib = useMemo<PeraContribMonth[]>(() => {
+    if (!activePeraAccount) return []
+    return peraContribByAccount[activePeraAccount.id] ?? []
+  }, [activePeraAccount, peraContribByAccount])
 
   function addPeraAccount() {
     setPeraAccounts((previous) => {
       if (previous.length >= MAX_PERA_ACCOUNTS) return previous
       const nextNumber = previous.length + 1
       const nextId = `pera-${nextNumber}`
+      const contributionScalingFactor = getScalingFactor(nextNumber, SEED_CONTRIB_BASE_MULTIPLIER, SEED_CONTRIB_STEP_MULTIPLIER)
+      const holdingScalingFactor = getScalingFactor(nextNumber, SEED_HOLDING_BASE_MULTIPLIER, SEED_HOLDING_STEP_MULTIPLIER)
       const seededContrib = initialPeraContribByAccount['pera-1'].map((entry) => ({
         ...entry,
-        amount: Math.round(entry.amount * (0.85 + nextNumber * 0.03)),
+        amount: Math.round(entry.amount * contributionScalingFactor),
       }))
       const seededHoldings = initialPeraHoldingsByAccount['pera-1'].map((holding, index) => ({
         ...holding,
         accountId: nextId,
-        fund: index === 0 ? `Starter PERA Core Fund ${nextNumber}` : holding.fund,
-        value: Number((holding.value * (0.38 + nextNumber * 0.06)).toFixed(2)),
+        fund: index === PRIMARY_SEEDED_FUND_INDEX ? `${SEED_FUND_NAME_PREFIX} ${nextNumber}` : holding.fund,
+        value: Number((holding.value * holdingScalingFactor).toFixed(2)),
+        gain: Number((holding.gain * holdingScalingFactor).toFixed(1)),
       }))
 
       setPeraContribByAccount((existing) => ({ ...existing, [nextId]: seededContrib }))
@@ -1114,8 +1136,10 @@ function App() {
   const totalPeraValue = activePeraHoldings.reduce((sum, h) => sum + h.value, 0)
   const ytdContrib = activePeraContrib.reduce((sum, m) => sum + m.amount, 0)
   const ytdTarget = activePeraContrib.reduce((sum, m) => sum + m.target, 0)
-  const contribPct = ytdTarget > 0 ? Math.round((ytdContrib / ytdTarget) * 100) : 0
-  const maxContrib = Math.max(1, ...activePeraContrib.map((m) => m.target))
+  const contribPct = safePercentage(ytdContrib, ytdTarget)
+  const maxContrib = activePeraContrib.length
+    ? Math.max(...activePeraContrib.map((m) => m.target))
+    : DEFAULT_CHART_MAX_VALUE
   const activeFundAlloc = Object.entries(
     activePeraHoldings.reduce<Record<string, number>>((totals, holding) => {
       totals[holding.type] = (totals[holding.type] ?? 0) + holding.value
@@ -1123,8 +1147,8 @@ function App() {
     }, {}),
   ).map(([label, value]) => ({
     label,
-    pct: totalPeraValue ? Math.round((value / totalPeraValue) * 100) : 0,
-    color: label === 'Balanced' ? '#2dd4bf' : label === 'Equity' ? '#34d399' : '#6ee7b7',
+    pct: safePercentage(value, totalPeraValue),
+    color: FUND_TYPE_COLORS[label] ?? DEFAULT_FUND_COLOR,
   }))
   const accountSlotsLeft = Math.max(0, MAX_PERA_ACCOUNTS - peraAccounts.length)
 
@@ -1163,7 +1187,7 @@ function App() {
         </div>
         <div className="pera-account-grid">
           {peraAccounts.map((account) => {
-            const pace = account.yearlyTarget > 0 ? Math.round((account.ytdContrib / account.yearlyTarget) * 100) : 0
+            const pace = safePercentage(account.ytdContrib, account.yearlyTarget)
             return (
               <button
                 key={account.id}
