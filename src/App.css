@@ -1437,18 +1437,20 @@ label {
 }
 
 .learning-content-overlay {
+  --learning-overlay-text-color: #fff;
+  --learning-overlay-muted-text: rgba(255, 255, 255, 0.92);
   position: absolute;
   inset: 0;
   display: grid;
   align-content: end;
   gap: 10px;
   padding: 14px;
-  color: #fff;
+  color: var(--learning-overlay-text-color);
   background: linear-gradient(
     180deg,
-    rgba(3, 12, 31, 0.08) 15%,
-    rgba(3, 12, 31, 0.74) 60%,
-    rgba(3, 12, 31, 0.92) 100%
+    rgba(3, 12, 31, 0.18) 15%,
+    rgba(3, 12, 31, 0.84) 60%,
+    rgba(3, 12, 31, 0.96) 100%
   );
   opacity: 0;
   transform: translateY(8px);
@@ -1464,21 +1466,21 @@ label {
 
 .learning-content-overlay h4,
 .learning-content-overlay p {
-  color: #fff;
+  color: var(--learning-overlay-text-color);
 }
 
 .learning-content-overlay .learning-content-meta {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--learning-overlay-muted-text);
 }
 
 .learning-content-overlay .learning-chip {
   border-color: rgba(255, 255, 255, 0.48);
-  color: #fff;
+  color: var(--learning-overlay-text-color);
   background: rgba(255, 255, 255, 0.12);
 }
 
 .learning-content-overlay .allocation-row span {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--learning-overlay-muted-text);
 }
 
 .learning-content-overlay .bar-track {
