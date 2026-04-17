@@ -1014,6 +1014,8 @@ button.active,
 }
 
 .dashboard-allocation-card {
+  --allocation-bonds-color: #7c3aed;
+  --allocation-cash-color: #f59e0b;
   align-content: start;
 }
 

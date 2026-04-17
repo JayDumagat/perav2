@@ -281,9 +281,9 @@ const sponsoredContents: SponsoredContent[] = [
 const dashboardActivities: DashboardActivity[] = [
   { id: 'a1', action: 'Bought TSLA', account: 'Trading', time: '09:42 AM', amount: 12350, direction: 'out' },
   { id: 'a2', action: 'PERA contribution', account: 'PERA Core Retirement', time: '08:15 AM', amount: 800, direction: 'out' },
-  { id: 'a3', action: 'Added to Growth Leaders', account: 'Managed Portfolios', time: 'Yesterday', amount: 5000, direction: 'out' },
+  { id: 'a3', action: 'Added to Growth Leaders', account: 'Trading', time: 'Yesterday', amount: 5000, direction: 'out' },
   { id: 'a4', action: 'Sold NVDA partial', account: 'Trading', time: 'Yesterday', amount: 7420, direction: 'in' },
-  { id: 'a5', action: 'Dividend credited', account: 'Managed Income', time: '2 days ago', amount: 1340, direction: 'in' },
+  { id: 'a5', action: 'Dividend credited', account: 'PERA', time: '2 days ago', amount: 1340, direction: 'in' },
 ]
 
 const marketWatch = [
@@ -1039,7 +1039,7 @@ function App() {
   const bondsExposure = safePercentage(bondsAmount, totalNetWorth)
   const cashExposure = Math.max(0, 100 - equitiesExposure - bondsExposure)
   const equitiesExposurePct = equitiesExposure
-  const dayPeriod = useMemo(() => {
+  const timeOfDay = useMemo(() => {
     const hour = new Date().getHours()
     if (hour < AFTERNOON_HOUR_START) return 'morning'
     if (hour < EVENING_HOUR_START) return 'afternoon'
@@ -1104,7 +1104,7 @@ function App() {
 
       <section className="card dashboard-morning-card">
         <h3>Morning Notes</h3>
-        <p className="dashboard-morning-greeting">Good {dayPeriod}.</p>
+        <p className="dashboard-morning-greeting">Good {timeOfDay}.</p>
         <ul className="list dashboard-note-list">
           <li>
             <div>
@@ -1285,7 +1285,7 @@ function App() {
         <div
           className="allocation-pie"
           style={{
-            background: `conic-gradient(var(--accent) 0% ${equitiesExposure}%, #7c3aed ${equitiesExposure}% ${equitiesExposure + bondsExposure}%, #f59e0b ${equitiesExposure + bondsExposure}% 100%)`,
+            background: `conic-gradient(var(--accent) 0% ${equitiesExposure}%, var(--allocation-bonds-color) ${equitiesExposure}% ${equitiesExposure + bondsExposure}%, var(--allocation-cash-color) ${equitiesExposure + bondsExposure}% 100%)`,
           }}
           aria-hidden
         />
@@ -1301,14 +1301,14 @@ function App() {
             <span>Bonds</span>
             <strong>{bondsExposure}%</strong>
             <div className="bar-track">
-              <span style={{ width: `${bondsExposure}%`, background: '#7c3aed' }} />
+              <span style={{ width: `${bondsExposure}%`, background: 'var(--allocation-bonds-color)' }} />
             </div>
           </div>
           <div className="allocation-row">
             <span>Cash</span>
             <strong>{cashExposure}%</strong>
             <div className="bar-track">
-              <span style={{ width: `${cashExposure}%`, background: '#f59e0b' }} />
+              <span style={{ width: `${cashExposure}%`, background: 'var(--allocation-cash-color)' }} />
             </div>
           </div>
         </div>
