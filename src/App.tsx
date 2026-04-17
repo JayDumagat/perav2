@@ -119,6 +119,64 @@ const learningPaths = [
   { label: 'Advanced', progress: 19 },
 ]
 
+// ── PERA DATA ─────────────────────────────────────────────────────────────────
+
+type PeraHolding = {
+  fund: string
+  type: string
+  units: number
+  navps: number
+  value: number
+  gain: number
+}
+
+type PeraContribMonth = {
+  month: string
+  amount: number
+  target: number
+}
+
+type PeraFundAlloc = {
+  label: string
+  pct: number
+  color: string
+}
+
+type PeraMilestone = {
+  year: number
+  label: string
+  projected: number
+  reached: boolean
+}
+
+const peraHoldings: PeraHolding[] = [
+  { fund: 'BPI Retirement Core Fund', type: 'Balanced', units: 82340, navps: 0.6218, value: 51219.21, gain: 12.4 },
+  { fund: 'BDO Equity Retirement Fund', type: 'Equity', units: 43800, navps: 0.4102, value: 17966.76, gain: 9.7 },
+  { fund: 'Sun Life PERA Bond Fund', type: 'Bond', units: 19200, navps: 0.8904, value: 17095.68, gain: 4.1 },
+]
+
+const peraContribHistory: PeraContribMonth[] = [
+  { month: 'Nov', amount: 800, target: 800 },
+  { month: 'Dec', amount: 800, target: 800 },
+  { month: 'Jan', amount: 900, target: 800 },
+  { month: 'Feb', amount: 800, target: 800 },
+  { month: 'Mar', amount: 900, target: 800 },
+  { month: 'Apr', amount: 400, target: 800 },
+]
+
+const peraFundAlloc: PeraFundAlloc[] = [
+  { label: 'Balanced', pct: 59, color: '#2dd4bf' },
+  { label: 'Equity', pct: 21, color: '#34d399' },
+  { label: 'Bond', pct: 20, color: '#6ee7b7' },
+]
+
+const peraMilestones: PeraMilestone[] = [
+  { year: 2026, label: '₱100K PERA milestone', projected: 100000, reached: false },
+  { year: 2029, label: '₱200K mark – compounding kicks in', projected: 200000, reached: false },
+  { year: 2034, label: 'Half-way to target', projected: 500000, reached: false },
+  { year: 2049, label: 'Full retirement target', projected: 1200000, reached: false },
+]
+
 const morningNotes = [
   { title: 'Good morning, Jordan', detail: 'US equities opened firmer with broad participation in mega-cap tech.', time: '6:45 AM' },
   { title: 'Macro watch', detail: 'Treasury yields are stable ahead of inflation guidance this afternoon.', time: '7:10 AM' },
@@ -931,56 +989,116 @@ function App() {
     </div>
   )
 
+  const totalPeraValue = peraHoldings.reduce((sum, h) => sum + h.value, 0)
+  const ytdContrib = peraContribHistory.reduce((sum, m) => sum + m.amount, 0)
+  const ytdTarget = peraContribHistory.reduce((sum, m) => sum + m.target, 0)
+  const contribPct = Math.round((ytdContrib / ytdTarget) * 100)
+  const maxContrib = Math.max(...peraContribHistory.map((m) => m.target))
+
   const peraView = (
     <div className="grid pera-grid">
-      <section className="card">
-        <h3>PERA Contributions</h3>
-        <p>
-          YTD Contributions <strong>$9,600</strong>
-        </p>
-        <p>
-          Current PERA Value <strong>$86,400</strong>
-        </p>
-        <p className="positive">+11.2% over 12 months</p>
+      {/* ── KPI Summary Row ─────────────────────────────── */}
+      <section className="card span-3 pera-kpi-row">
+        <div className="pera-kpi">
+          <span>Total PERA Value</span>
+          <strong>₱{totalPeraValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
+          <p className="positive">+11.2% over 12 months</p>
+        </div>
+        <div className="pera-kpi">
+          <span>YTD Contributions</span>
+          <strong>₱{ytdContrib.toLocaleString()}</strong>
+          <p>{contribPct}% of annual pace</p>
+        </div>
+        <div className="pera-kpi">
+          <span>Estimated Tax Savings</span>
+          <strong>₱1,184</strong>
+          <p>This fiscal year</p>
+        </div>
+        <div className="pera-kpi">
+          <span>Avg. Return (12 mo)</span>
+          <strong>+8.7%</strong>
+          <p>Across all funds</p>
+        </div>
       </section>
 
+      {/* ── Holdings ─────────────────────────────────────── */}
       <section className="card span-2">
-        <h3>Growth Over Time</h3>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
-          <path d={chartPath([12, 13, 14, 15.5, 17.2, 18.6, 20.3, 23.1, 24.8, 27.4, 29.1, 32])} />
-        </svg>
+        <h3>Holdings</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Fund</th>
+              <th>Type</th>
+              <th>Units</th>
+              <th>NAVPS</th>
+              <th>Value</th>
+              <th>Gain</th>
+            </tr>
+          </thead>
+          <tbody>
+            {peraHoldings.map((h) => (
+              <tr key={h.fund}>
+                <td>{h.fund}</td>
+                <td>
+                  <span className={`pera-fund-badge pera-fund-badge--${h.type.toLowerCase()}`}>{h.type}</span>
+                </td>
+                <td>{h.units.toLocaleString()}</td>
+                <td>₱{h.navps.toFixed(4)}</td>
+                <td>₱{h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                <td className={h.gain >= 0 ? 'positive' : 'negative'}>+{h.gain}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
+      {/* ── Fund Allocation ───────────────────────────────── */}
       <section className="card">
-        <h3>Tax Advantages</h3>
-        <ul className="list">
-          <li>
-            <div>
-              <strong>Tax-deferred growth</strong>
-              <p>Compounding without annual tax drag.</p>
+        <h3>Fund Allocation</h3>
+        {peraFundAlloc.map((item) => (
+          <div key={item.label} className="allocation-row">
+            <span>{item.label}</span>
+            <span>{item.pct}%</span>
+            <div className="bar-track">
+              <span style={{ width: `${item.pct}%`, background: item.color }} />
             </div>
-          </li>
-          <li>
-            <div>
-              <strong>Contribution incentive</strong>
-              <p>Estimated tax savings this year: $1,184.</p>
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <section className="card">
-        <h3>Allocation Management</h3>
+          </div>
+        ))}
         <label>
-          Auto-allocation profile
+          Rebalance profile
           <select>
-            <option>Balanced (from onboarding risk profile)</option>
-            <option>Conservative</option>
-            <option>Growth</option>
+            <option>Balanced (current)</option>
+            <option>Conservative – more bonds</option>
+            <option>Growth – more equity</option>
           </select>
         </label>
+        <button type="button" className="primary">
+          Apply rebalance
+        </button>
+      </section>
+
+      {/* ── Contribution History ──────────────────────────── */}
+      <section className="card">
+        <div className="heading-row">
+          <h3>Contribution History</h3>
+          <span className="pera-pace-badge">{contribPct}% of pace</span>
+        </div>
+        <div className="pera-contrib-bars">
+          {peraContribHistory.map((m) => (
+            <div key={m.month} className="pera-contrib-col">
+              <div className="pera-bar-wrap">
+                <div
+                  className="pera-bar"
+                  style={{ height: `${(m.amount / maxContrib) * 100}%` }}
+                  title={`₱${m.amount}`}
+                />
+              </div>
+              <span>{m.month}</span>
+            </div>
+          ))}
+        </div>
         <label>
-          Monthly contribution
+          Monthly contribution target
           <input
             type="number"
             min={0}
@@ -988,28 +1106,74 @@ function App() {
             onChange={(event) => setMonthlyContribution(Number(event.target.value) || 0)}
           />
         </label>
-        <label>
-          Expected annual return (%)
-          <input
-            type="number"
-            min={1}
-            max={18}
-            step="0.5"
-            value={(annualReturn * 100).toFixed(1)}
-            onChange={(event) => setAnnualReturn(Math.max(0.01, Number(event.target.value) / 100))}
-          />
-        </label>
-        <button type="button" className="primary">
-          Save recurring contribution
-        </button>
       </section>
 
-      <section className="card span-2">
+      {/* ── Growth Chart ─────────────────────────────────── */}
+      <section className="card span-2 chart-card">
+        <div className="heading-row">
+          <h3>Portfolio Growth Over Time</h3>
+          <label style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+            Annual return %
+            <input
+              type="number"
+              min={1}
+              max={18}
+              step="0.5"
+              style={{ width: 72 }}
+              value={(annualReturn * 100).toFixed(1)}
+              onChange={(event) => setAnnualReturn(Math.max(0.01, Number(event.target.value) / 100))}
+            />
+          </label>
+        </div>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
+          <path d={chartPath([12, 13, 14, 15.5, 17.2, 18.6, 20.3, 23.1, 24.8, 27.4, 29.1, 32])} />
+        </svg>
+      </section>
+
+      {/* ── Retirement Projection ────────────────────────── */}
+      <section className="card">
         <h3>Retirement Projection</h3>
-        <p>
-          Estimated value at retirement: <strong>${projected.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
-        </p>
-        <p>Based on current balance, monthly contribution, and expected return assumptions.</p>
+        <div className="pera-kpi" style={{ paddingBottom: 4 }}>
+          <span>Estimated at retirement</span>
+          <strong>₱{projected.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
+          <p>Based on ₱{monthlyContribution}/mo · {(annualReturn * 100).toFixed(1)}% return · 25 yr</p>
+        </div>
+        <ul className="list">
+          {peraMilestones.map((m) => (
+            <li key={m.year} className={m.reached ? 'pera-milestone--done' : ''}>
+              <div>
+                <strong>{m.label}</strong>
+                <p>{m.year} · ₱{m.projected.toLocaleString()}</p>
+              </div>
+              <span className={`pera-milestone-badge ${m.reached ? 'pera-milestone-badge--done' : ''}`}>
+                {m.reached ? 'Reached' : 'Upcoming'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ── Tax Advantages ───────────────────────────────── */}
+      <section className="card span-2">
+        <h3>Tax Advantages</h3>
+        <div className="pera-tax-grid">
+          <article className="pera-tax-card">
+            <strong>Tax-deferred growth</strong>
+            <p>Investment returns compound annually without income tax drag, letting gains build on gains over decades.</p>
+          </article>
+          <article className="pera-tax-card">
+            <strong>Contribution incentive</strong>
+            <p>Estimated savings this year: ₱1,184. Your contributions reduce your taxable income by your effective rate.</p>
+          </article>
+          <article className="pera-tax-card">
+            <strong>Tax-free withdrawal</strong>
+            <p>Qualified withdrawals at retirement are 100% tax-free, unlike regular investment accounts.</p>
+          </article>
+          <article className="pera-tax-card">
+            <strong>Lifetime limit: ₱200K / year</strong>
+            <p>Maximize contributions to the annual limit to capture the full government incentive package.</p>
+          </article>
+        </div>
       </section>
     </div>
   )
