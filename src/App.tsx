@@ -147,7 +147,7 @@ function growthProjection(current: number, monthly: number, years: number, annua
 function App() {
   const [theme, setTheme] = useState<Theme>('light')
   const [authStep, setAuthStep] = useState<AuthStep>('login')
-  const [onboardingStep, setOnboardingStep] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [page, setPage] = useState<MainPage>('dashboard')
   const [watchlist, setWatchlist] = useState(initialStocks)
@@ -268,7 +268,7 @@ function App() {
               Password
               <input type="password" placeholder="Minimum 8 characters" />
             </label>
-            <button type="button" className="primary" onClick={() => setOnboardingStep(true)}>
+            <button type="button" className="primary" onClick={() => setShowOnboarding(true)}>
               Continue to onboarding
             </button>
           </>
@@ -317,7 +317,7 @@ function App() {
         type="button"
         className="primary"
         onClick={() => {
-          setOnboardingStep(false)
+          setShowOnboarding(false)
           setAuthed(true)
         }}
       >
@@ -673,7 +673,7 @@ function App() {
             {theme === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
         </header>
-        {onboardingStep ? onboardingView : authView}
+        {showOnboarding ? onboardingView : authView}
       </div>
     )
   }
@@ -698,7 +698,7 @@ function App() {
           type="button"
           onClick={() => {
             setAuthed(false)
-            setOnboardingStep(false)
+            setShowOnboarding(false)
             setAuthStep('login')
           }}
         >
