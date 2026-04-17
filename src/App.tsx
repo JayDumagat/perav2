@@ -379,7 +379,7 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
     const container = containerRef.current
     if (!container) return
 
-    container.innerHTML = ''
+    container.replaceChildren()
     const widgetHost = document.createElement('div')
     widgetHost.className = 'tradingview-widget-container__widget'
     container.appendChild(widgetHost)
@@ -404,13 +404,7 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
     container.appendChild(script)
 
     return () => {
-      if (container.contains(script)) {
-        script.remove()
-      }
-      if (container.contains(widgetHost)) {
-        widgetHost.remove()
-      }
-      container.innerHTML = ''
+      container.replaceChildren()
     }
   }, [symbol, theme])
 
