@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 
 type Theme = 'light' | 'dark'
-type AuthStep = 'login' | 'register' | 'onboarding'
+type AuthStep = 'login' | 'register'
 type MainPage = 'dashboard' | 'trading' | 'pera' | 'learning'
 type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
 
@@ -363,6 +363,7 @@ function growthProjection(current: number, monthly: number, years: number, annua
 function App() {
   const [theme, setTheme] = useState<Theme>('light')
   const [authStep, setAuthStep] = useState<AuthStep>('login')
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [page, setPage] = useState<MainPage>('dashboard')
   const [watchlist, setWatchlist] = useState(initialStocks)
@@ -456,24 +457,22 @@ function App() {
             <h1>
               {authStep === 'login' && 'Sign in to your account'}
               {authStep === 'register' && 'Create your account'}
-              {authStep === 'onboarding' && 'Set up your profile'}
             </h1>
             <p>
               {authStep === 'login' && 'Please continue to sign in to your investing account'}
               {authStep === 'register' && 'Create your account in a guided, minimal flow'}
-              {authStep === 'onboarding' && 'Set your investing profile and initial setup path'}
             </p>
           </div>
 
           <div className="auth-tabs">
-            {(['login', 'register', 'onboarding'] as AuthStep[]).map((step) => (
+            {(['login', 'register'] as AuthStep[]).map((step) => (
               <button
                 key={step}
                 type="button"
                 className={`auth-tab ${authStep === step ? 'active' : ''}`}
                 onClick={() => setAuthStep(step)}
               >
-                {step === 'login' ? 'Login' : step === 'register' ? 'Register' : 'Onboarding'}
+                {step === 'login' ? 'Login' : 'Register'}
               </button>
             ))}
           </div>
@@ -515,51 +514,87 @@ function App() {
                   <label>Password</label>
                   <input type="password" placeholder="Minimum 8 characters" />
                 </div>
-                <button type="button" className="btn btn-primary" onClick={() => setAuthStep('onboarding')}>
+                <button type="button" className="btn btn-primary" onClick={() => setShowOnboarding(true)}>
                   Continue to onboarding
                 </button>
               </>
             )}
+          </div>
 
-            {authStep === 'onboarding' && (
-              <>
-                <div className="field-group">
-                  <label>Risk profile</label>
-                  <select>
-                    <option>Conservative</option>
-                    <option>Balanced</option>
-                    <option>Aggressive</option>
-                  </select>
-                </div>
-                <div className="field-group">
-                  <label>Financial goal</label>
-                  <select>
-                    <option>Capital growth</option>
-                    <option>Stable income</option>
-                    <option>Retirement planning</option>
-                  </select>
-                </div>
-                <div className="field-group">
-                  <label>Experience level</label>
-                  <select>
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
-                  </select>
-                </div>
-                <div className="field-group">
-                  <label>Initial setup preference</label>
-                  <select>
-                    <option>Start with Stocks</option>
-                    <option>Start with Portfolios</option>
-                    <option>Start with PERA</option>
-                  </select>
-                </div>
-                <button type="button" className="btn btn-primary" onClick={() => setAuthed(true)}>
-                  Finish setup
-                </button>
-              </>
-            )}
+          <div className="auth-footer">
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            >
+              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+              {theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <GeometricPanel />
+    </div>
+  )
+
+  const onboardingView = (
+    <div className="auth-root">
+      <div className="auth-form-side">
+        <div className="auth-logo">
+          <span className="logo-mark">P</span>
+          PERA Trade
+        </div>
+
+        <div className="auth-form-content">
+          <div className="auth-heading">
+            <h1>Set up your profile</h1>
+            <p>Set your investing profile and initial setup path</p>
+          </div>
+
+          <div className="auth-fields">
+            <div className="field-group">
+              <label>Risk profile</label>
+              <select>
+                <option>Conservative</option>
+                <option>Balanced</option>
+                <option>Aggressive</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Financial goal</label>
+              <select>
+                <option>Capital growth</option>
+                <option>Stable income</option>
+                <option>Retirement planning</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Experience level</label>
+              <select>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Initial setup preference</label>
+              <select>
+                <option>Start with Stocks</option>
+                <option>Start with Portfolios</option>
+                <option>Start with PERA</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                setShowOnboarding(false)
+                setAuthed(true)
+              }}
+            >
+              Finish setup
+            </button>
           </div>
 
           <div className="auth-footer">
@@ -918,7 +953,7 @@ function App() {
   )
 
   if (!authed) {
-    return authView
+    return showOnboarding ? onboardingView : authView
   }
 
   return (
@@ -985,6 +1020,8 @@ function App() {
                     className="dropdown-item danger"
                     onClick={() => {
                       setAuthed(false)
+                      setShowOnboarding(false)
+                      setAuthStep('login')
                       setDropdownOpen(false)
                     }}
                   >
