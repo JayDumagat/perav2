@@ -689,6 +689,18 @@ button.active,
   gap: 18px;
 }
 
+.fintech-dashboard .card {
+  --fintech-card-glow-y: 18px;
+  --fintech-card-glow-blur: 32px;
+  --fintech-card-glow-spread: -26px;
+  --fintech-card-glow-accent-mix: 42%;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: linear-gradient(165deg, var(--panel), color-mix(in srgb, var(--panel-strong) 70%, var(--panel)));
+  box-shadow:
+    0 var(--fintech-card-glow-y) var(--fintech-card-glow-blur) var(--fintech-card-glow-spread)
+    color-mix(in srgb, var(--accent) var(--fintech-card-glow-accent-mix), transparent);
+}
+
 .dashboard-summary-card {
   gap: 14px;
   background:
@@ -757,14 +769,17 @@ button.active,
 }
 
 .dashboard-action-bar {
+  gap: 12px;
+}
+
+.dashboard-action-buttons {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  align-self: start;
 }
 
-.dashboard-action-bar button {
+.dashboard-action-buttons button {
   border-radius: 10px;
   font-weight: 600;
 }
@@ -776,6 +791,24 @@ button.active,
 .dashboard-sponsored-card {
   align-self: stretch;
   gap: 10px;
+}
+
+.dashboard-sponsored-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.dashboard-sponsored-meta span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-muted);
 }
 
 .dashboard-sponsored-top {
@@ -851,6 +884,41 @@ button.active,
 
 .dashboard-unified-chart {
   height: 230px;
+}
+
+.dashboard-morning-card {
+  align-content: start;
+}
+
+.dashboard-morning-greeting {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.dashboard-note-list li {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.dashboard-note-list p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dashboard-market-list li {
+  align-items: flex-start;
+}
+
+.dashboard-market-values {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.dashboard-market-values span {
+  font-weight: 700;
+  color: var(--text-strong);
 }
 
 .money-group-grid {
@@ -943,6 +1011,40 @@ button.active,
 .dashboard-insights-list p {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.dashboard-allocation-card {
+  --allocation-bonds-color: #7c3aed;
+  --allocation-cash-color: #f59e0b;
+  align-content: start;
+}
+
+.allocation-pie {
+  width: 132px;
+  height: 132px;
+  border-radius: 999px;
+  margin: 2px auto 4px;
+  border: 1px solid var(--border);
+}
+
+.allocation-legend {
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-activity-list li {
+  align-items: flex-start;
+}
+
+.dashboard-activity-values {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.dashboard-activity-values small {
+  color: var(--text-muted);
+  font-size: 11px;
 }
 /* ── HEADING ROW ────────────────────────────────────── */
 .heading-row {
