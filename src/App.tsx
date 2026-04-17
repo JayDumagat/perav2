@@ -5,6 +5,8 @@ type Theme = 'light' | 'dark'
 type AuthStep = 'login' | 'register'
 type MainPage = 'dashboard' | 'trading' | 'pera' | 'learning'
 type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
+type DashboardRange = '1M' | '6M' | '1Y' | 'All'
+type DashboardAccountFilter = 'All' | 'Trading' | 'PERA' | 'Managed'
 
 type Stock = {
   symbol: string
@@ -16,8 +18,6 @@ type Stock = {
   marketCap: string
   series: Record<Range, number[]>
 }
-
-const ranges: Range[] = ['1D', '1W', '1M', '3M', '1Y']
 
 const initialStocks: Stock[] = [
   {
@@ -88,18 +88,6 @@ const initialStocks: Stock[] = [
 
 const defaultSelectedSymbol = 'TSLA'
 const defaultSelectedStock = initialStocks.find((stock) => stock.symbol === defaultSelectedSymbol) ?? initialStocks[0]
-
-const allocation = [
-  { label: 'Stocks', value: 54, color: '#6366f1' },
-  { label: 'Portfolios', value: 26, color: '#818cf8' },
-  { label: 'PERA', value: 20, color: '#0f766e' },
-]
-
-const transactions = [
-  { id: 'TX-1103', action: 'Buy', asset: 'NVDA', value: '$4,100', date: 'Today' },
-  { id: 'TX-1102', action: 'PERA Contribution', asset: 'Retirement Core', value: '$800', date: 'Yesterday' },
-  { id: 'TX-1101', action: 'Sell', asset: 'AAPL', value: '$2,320', date: '2 days ago' },
-]
 
 const bundles = [
   { name: 'Tech Momentum', holdings: 'NVDA, MSFT, AMD, AVGO', risk: 'High' },
@@ -240,17 +228,36 @@ const peraMilestones: PeraMilestone[] = [
   { year: 2049, label: 'Full retirement target', projected: 1200000, reached: false },
 ]
 
-const morningNotes = [
-  { title: 'Good morning, Jordan', detail: 'US equities opened firmer with broad participation in mega-cap tech.', time: '6:45 AM' },
-  { title: 'Macro watch', detail: 'Treasury yields are stable ahead of inflation guidance this afternoon.', time: '7:10 AM' },
-  { title: 'Plan highlight', detail: 'Your PERA monthly contribution posts tomorrow. Current pace: 104% of target.', time: '7:28 AM' },
+const dashboardRanges: DashboardRange[] = ['1M', '6M', '1Y', 'All']
+const dashboardFilters: DashboardAccountFilter[] = ['All', 'Trading', 'PERA', 'Managed']
+
+const tradingHoldings = [
+  { symbol: 'NVDA', shares: 28, avgPrice: 131.4 },
+  { symbol: 'MSFT', shares: 18, avgPrice: 402.7 },
+  { symbol: 'TSLA', shares: 15, avgPrice: 302.9 },
+  { symbol: 'AAPL', shares: 24, avgPrice: 134.1 },
 ]
 
-const marketBriefs = [
-  { label: 'S&P 500', value: '5,349.21', change: 0.74, symbol: 'FOREXCOM:SPXUSD' },
-  { label: 'NASDAQ 100', value: '18,775.40', change: 1.16, symbol: 'NASDAQ:NDX' },
-  { label: 'BTC / USD', value: '$72,418', change: -0.58, symbol: 'BITSTAMP:BTCUSD' },
+const managedPortfolios = [
+  { id: 'mp-1', name: 'Balanced Income', invested: 84000, value: 95640 },
+  { id: 'mp-2', name: 'Growth Leaders', invested: 69000, value: 81280 },
+  { id: 'mp-3', name: 'Global Diversified', invested: 52000, value: 58640 },
 ]
+
+const dashboardSeriesWeights: Record<DashboardRange, number[]> = {
+  '1M': [0.975, 0.98, 0.986, 0.982, 0.991, 0.996, 1],
+  '6M': [0.87, 0.89, 0.9, 0.92, 0.94, 0.955, 0.97, 0.982, 0.99, 0.998, 1.004, 1.01],
+  '1Y': [0.76, 0.79, 0.81, 0.83, 0.86, 0.88, 0.9, 0.93, 0.95, 0.98, 1, 1.03],
+  All: [0.58, 0.62, 0.66, 0.7, 0.74, 0.79, 0.84, 0.88, 0.91, 0.94, 0.97, 1],
+}
+
+const retirementGoal = 1200000 // PHP target
+// Synthetic daily return assumptions used for intraday estimate when live account-level delta feeds are unavailable.
+const PERA_DAILY_RETURN_RATE = 0.0024 // ~0.24% daily estimate
+const MANAGED_DAILY_RETURN_RATE = 0.0018 // ~0.18% daily estimate
+// Estimated equity exposure assumptions used for high-level risk insight.
+const MANAGED_EQUITY_ALLOCATION = 0.58
+const PERA_EQUITY_ALLOCATION = 0.46
 
 // ── ICONS ────────────────────────────────────────────────────────────────────
 
@@ -483,6 +490,11 @@ function chartPath(points: number[]) {
     .join(' ')
 }
 
+function sumSeries(seriesA: number[], seriesB: number[]) {
+  const length = Math.max(seriesA.length, seriesB.length)
+  return Array.from({ length }, (_, index) => (seriesA[index] ?? 0) + (seriesB[index] ?? 0))
+}
+
 const PERA_PROJECTION_YEARS = 25
 const DEFAULT_CHART_MAX_VALUE = 1
 const SEED_CONTRIB_BASE_MULTIPLIER = 0.85
@@ -517,49 +529,6 @@ function safePercentage(numerator: number, denominator: number) {
   return Math.round((numerator / denominator) * 100)
 }
 
-function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    container.replaceChildren()
-    const widgetHost = document.createElement('div')
-    widgetHost.className = 'tradingview-widget-container__widget'
-    container.appendChild(widgetHost)
-
-    const script = document.createElement('script')
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
-    script.type = 'text/javascript'
-    script.async = true
-    script.innerHTML = JSON.stringify({
-      autosize: true,
-      symbol,
-      interval: '60',
-      timezone: 'Etc/UTC',
-      theme: theme === 'dark' ? 'dark' : 'light',
-      style: '1',
-      locale: 'en',
-      hide_top_toolbar: false,
-      allow_symbol_change: true,
-      save_image: false,
-      support_host: 'https://www.tradingview.com',
-    })
-    container.appendChild(script)
-
-    return () => {
-      container.replaceChildren()
-    }
-  }, [symbol, theme])
-
-  return (
-    <div className="tradingview-widget-container tv-chart">
-      <div className="tv-chart-host" ref={containerRef} />
-    </div>
-  )
-}
-
 function App() {
   const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
   const [theme, setTheme] = useState<Theme>(prefersDark ? 'dark' : 'light')
@@ -570,7 +539,7 @@ function App() {
   const [watchlist, setWatchlist] = useState(initialStocks)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(defaultSelectedSymbol)
-  const [range, setRange] = useState<Range>('1D')
+  const tradingRange: Range = '1D'
   const [orderType, setOrderType] = useState<'Market' | 'Limit'>('Market')
   const [orderSide, setOrderSide] = useState<'Buy' | 'Sell'>('Buy')
   const [quantity, setQuantity] = useState(10)
@@ -579,7 +548,10 @@ function App() {
   const [annualReturn, setAnnualReturn] = useState(0.08)
   const [quizAnswer, setQuizAnswer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [dashboardSymbol, setDashboardSymbol] = useState(marketBriefs[0].symbol)
+  const [dashboardRange, setDashboardRange] = useState<DashboardRange>('1Y')
+  const [dashboardFilter, setDashboardFilter] = useState<DashboardAccountFilter>('All')
+  const [showPeraAccounts, setShowPeraAccounts] = useState(false)
+  const [showManagedPortfolios, setShowManagedPortfolios] = useState(false)
   const [peraAccounts, setPeraAccounts] = useState(initialPeraAccounts)
   const [activePeraAccountId, setActivePeraAccountId] = useState(initialPeraAccounts[0].id)
   const [peraHoldingsByAccount, setPeraHoldingsByAccount] = useState(initialPeraHoldingsByAccount)
@@ -594,6 +566,10 @@ function App() {
   const filteredStocks = useMemo(
     () => watchlist.filter((stock) => `${stock.symbol} ${stock.name}`.toLowerCase().includes(search.toLowerCase())),
     [search, watchlist],
+  )
+  const watchlistBySymbol = useMemo<Record<string, Stock>>(
+    () => watchlist.reduce<Record<string, Stock>>((acc, stock) => ({ ...acc, [stock.symbol]: stock }), {}),
+    [watchlist],
   )
 
   const estimatedOrderCost = useMemo(() => {
@@ -872,153 +848,268 @@ function App() {
     </div>
   )
 
+  const tradingTopHoldings = useMemo(() => {
+    return tradingHoldings
+      .map((holding) => {
+        const stock = watchlistBySymbol[holding.symbol]
+        const price = stock?.price ?? holding.avgPrice
+        return {
+          ...holding,
+          price,
+          value: price * holding.shares,
+          dayChange: stock?.change ?? 0,
+        }
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 3)
+  }, [watchlistBySymbol])
+
+  const tradingMarketValue = useMemo(
+    () => tradingHoldings.reduce((sum, holding) => sum + (watchlistBySymbol[holding.symbol]?.price ?? holding.avgPrice) * holding.shares, 0),
+    [watchlistBySymbol],
+  )
+  const tradingCostBasis = useMemo(() => tradingHoldings.reduce((sum, holding) => sum + holding.avgPrice * holding.shares, 0), [])
+  const tradingDailyPnL = useMemo(
+    () =>
+      tradingHoldings.reduce((sum, holding) => {
+        const stock = watchlistBySymbol[holding.symbol]
+        if (!stock) return sum
+        const previous = stock.price / (1 + stock.change / 100)
+        return sum + (stock.price - previous) * holding.shares
+      }, 0),
+    [watchlistBySymbol],
+  )
+
+  const totalPeraValueAllAccounts = useMemo(() => peraAccounts.reduce((sum, account) => sum + account.value, 0), [peraAccounts])
+  const totalPeraContributions = useMemo(() => peraAccounts.reduce((sum, account) => sum + account.ytdContrib, 0), [peraAccounts])
+
+  const managedTotalInvested = useMemo(() => managedPortfolios.reduce((sum, portfolio) => sum + portfolio.invested, 0), [])
+  const managedTotalValue = useMemo(() => managedPortfolios.reduce((sum, portfolio) => sum + portfolio.value, 0), [])
+  const managedTop = useMemo(() => managedPortfolios.slice(0, 2), [])
+  const managedPerformancePct = safePercentage(managedTotalValue - managedTotalInvested, managedTotalInvested)
+
+  const totalNetWorth = tradingMarketValue + totalPeraValueAllAccounts + managedTotalValue
+  const contributionsTotal = tradingCostBasis + totalPeraContributions + managedTotalInvested
+  const allTimeReturnAmount = totalNetWorth - contributionsTotal
+  const allTimeReturnPct = safePercentage(allTimeReturnAmount, contributionsTotal)
+  const todayChangeAmount = tradingDailyPnL + totalPeraValueAllAccounts * PERA_DAILY_RETURN_RATE + managedTotalValue * MANAGED_DAILY_RETURN_RATE
+  const todayBase = totalNetWorth - todayChangeAmount
+  const todayChangePct = safePercentage(todayChangeAmount, todayBase)
+  const peraGoalProgress = safePercentage(totalPeraValueAllAccounts, retirementGoal)
+  const retirementGap = Math.max(0, retirementGoal - totalPeraValueAllAccounts)
+
+  const accountSeriesByFilter = useMemo(() => {
+    const scaleByTotal = (total: number) =>
+      Object.fromEntries(
+        dashboardRanges.map((item) => [item, dashboardSeriesWeights[item].map((weight) => Number((weight * total).toFixed(2)))]),
+      ) as Record<DashboardRange, number[]>
+
+    const tradingSeries = scaleByTotal(tradingMarketValue)
+    const peraSeries = scaleByTotal(totalPeraValueAllAccounts)
+    const managedSeries = scaleByTotal(managedTotalValue)
+    const allSeries = Object.fromEntries(
+      dashboardRanges.map((item) => [item, sumSeries(sumSeries(tradingSeries[item], peraSeries[item]), managedSeries[item])]),
+    ) as Record<DashboardRange, number[]>
+
+    return {
+      Trading: tradingSeries,
+      PERA: peraSeries,
+      Managed: managedSeries,
+      All: allSeries,
+    } as Record<DashboardAccountFilter, Record<DashboardRange, number[]>>
+  }, [managedTotalValue, totalPeraValueAllAccounts, tradingMarketValue])
+
+  const currentDashboardSeries = accountSeriesByFilter[dashboardFilter][dashboardRange]
+  const equitiesExposure = safePercentage(
+    tradingMarketValue + managedTotalValue * MANAGED_EQUITY_ALLOCATION + totalPeraValueAllAccounts * PERA_EQUITY_ALLOCATION,
+    totalNetWorth,
+  )
+  const equitiesExposurePct = equitiesExposure
+
   const dashboardView = (
-    <div className="grid dashboard-grid">
-      <section className="card kpi">
-        <h3>Total Portfolio Value</h3>
-        <strong>$1,271,962.84</strong>
-        <p className="positive">+2.6% today · +$5,392.42</p>
-        <div className="quick-actions">
-          {['Buy', 'Sell', 'Deposit', 'Allocate to PERA'].map((action) => (
-            <button key={action} type="button">
-              {action}
-            </button>
-          ))}
+    <div className="grid dashboard-unified">
+      <section className="card span-3 dashboard-summary-card">
+        <div className="dashboard-summary-top">
+          <h3>Global Summary</h3>
+          <span className="summary-anchor">Trading + PERA + Managed</span>
+        </div>
+        <strong>₱{totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
+        <div className="dashboard-summary-metrics">
+          <article>
+            <span>Today’s Change</span>
+            <p className={todayChangeAmount >= 0 ? 'positive' : 'negative'}>
+              {todayChangeAmount >= 0 ? '+' : ''}₱{Math.abs(todayChangeAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })} (
+              {todayChangePct >= 0 ? '+' : ''}
+              {todayChangePct}%)
+            </p>
+            <small>PERA and managed deltas are estimated intraday.</small>
+          </article>
+          <article>
+            <span>All-time Return</span>
+            <p className={allTimeReturnAmount >= 0 ? 'positive' : 'negative'}>
+              {allTimeReturnAmount >= 0 ? '+' : ''}₱{Math.abs(allTimeReturnAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })} (
+              {allTimeReturnPct >= 0 ? '+' : ''}
+              {allTimeReturnPct}%)
+            </p>
+          </article>
+          <article>
+            <span>Total Contributions</span>
+            <p>₱{contributionsTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          </article>
         </div>
       </section>
 
-      <section className="card">
+      <section className="card span-3 dashboard-action-bar">
+        <button type="button">Deposit</button>
+        <button type="button">Withdraw</button>
+        <button type="button">Invest in portfolio</button>
+        <button type="button" className="primary">
+          Contribute to PERA
+        </button>
+      </section>
+
+      <section className="card span-3 dashboard-performance-card">
         <div className="heading-row">
-          <h3>Asset Allocation</h3>
-        </div>
-        {allocation.map((item) => (
-          <div key={item.label} className="allocation-row">
-            <span>{item.label}</span>
-            <span>{item.value}%</span>
-            <div className="bar-track">
-              <span style={{ width: `${item.value}%`, background: item.color }} />
+          <h3>Performance Chart (Unified)</h3>
+          <div className="dashboard-performance-controls">
+            <div className="segment slim">
+              {dashboardRanges.map((item) => (
+                <button key={item} type="button" className={dashboardRange === item ? 'active' : ''} onClick={() => setDashboardRange(item)}>
+                  {item}
+                </button>
+              ))}
+            </div>
+            <div className="segment slim">
+              {dashboardFilters.map((item) => (
+                <button key={item} type="button" className={dashboardFilter === item ? 'active' : ''} onClick={() => setDashboardFilter(item)}>
+                  {item}
+                </button>
+              ))}
             </div>
           </div>
-        ))}
-      </section>
-
-      <section className="card chart-card span-2">
-        <div className="heading-row">
-          <h3>Live Market Chart (TradingView)</h3>
-          <div className="segment slim">
-            {marketBriefs.map((item) => (
-              <button
-                key={item.symbol}
-                type="button"
-                className={dashboardSymbol === item.symbol ? 'active' : ''}
-                onClick={() => setDashboardSymbol(item.symbol)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
         </div>
-        <TradingViewWidget symbol={dashboardSymbol} theme={theme} />
-      </section>
-
-      <section className="card">
-        <h3>Morning Notes</h3>
-        <ul className="list snippet-list">
-          {morningNotes.map((note) => (
-            <li key={note.title}>
-              <div>
-                <strong>{note.title}</strong>
-                <p>{note.detail}</p>
-              </div>
-              <small>{note.time}</small>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="card">
-        <h3>Market Information</h3>
-        <div className="snippet-metrics">
-          {marketBriefs.map((item) => (
-            <article key={item.label} className="snippet-metric">
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-              <p className={item.change >= 0 ? 'positive' : 'negative'}>
-                {item.change >= 0 ? '+' : ''}
-                {item.change.toFixed(2)}%
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="card snippet-spotlight span-2">
-        <div className="heading-row">
-          <h3>Sponsored Insight</h3>
-          <button type="button" className="snippet-chip">
-            Partner
-          </button>
-        </div>
-        <h4>Emerald Core ETF Bundle</h4>
-        <p>Curated income + growth basket for long-term investors looking for lower volatility and quarterly dividends.</p>
-        <div className="quick-actions">
-          <button type="button">View details</button>
-          <button type="button">Add to watchlist</button>
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="heading-row">
-          <h3>Portfolio Performance</h3>
-          <div className="segment slim">
-            {ranges.map((item) => (
-              <button key={item} type="button" className={range === item ? 'active' : ''} onClick={() => setRange(item)}>
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
-          <path d={chartPath(selectedStock.series[range])} />
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart dashboard-unified-chart">
+          <path d={chartPath(currentDashboardSeries)} />
         </svg>
       </section>
 
-      <section className="card">
-        <h3>Watchlist</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Price</th>
-              <th>Day</th>
-            </tr>
-          </thead>
-          <tbody>
-            {watchlist.map((stock) => (
-              <tr key={stock.symbol}>
-                <td>{stock.symbol}</td>
-                <td>${stock.price.toFixed(2)}</td>
-                <td className={stock.change >= 0 ? 'positive' : 'negative'}>{stock.change.toFixed(2)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <section className="card span-3 dashboard-money-card">
+        <h3>Your Money</h3>
+        <div className="money-group-grid">
+          <article className="money-group money-group--trading">
+            <div className="money-group-head">
+              <h4>Trading</h4>
+              <button type="button" className="primary">Trade</button>
+            </div>
+            <p className="money-total">₱{tradingMarketValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p className={tradingDailyPnL >= 0 ? 'positive' : 'negative'}>
+              Daily P&amp;L: {tradingDailyPnL >= 0 ? '+' : ''}₱{Math.abs(tradingDailyPnL).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            </p>
+            <ul className="money-preview-list">
+              {tradingTopHoldings.map((holding) => (
+                <li key={holding.symbol}>
+                  <span>{holding.symbol}</span>
+                  <small>
+                    ₱{holding.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} · {holding.dayChange >= 0 ? '+' : ''}
+                    {holding.dayChange.toFixed(2)}%
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="money-group money-group--pera">
+            <div className="money-group-head">
+              <h4>PERA</h4>
+              <button type="button" onClick={() => setShowPeraAccounts((value) => !value)}>
+                {showPeraAccounts ? 'Hide accounts' : 'Expand accounts'}
+              </button>
+            </div>
+            <p className="money-total">₱{totalPeraValueAllAccounts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p>Total contributions: ₱{totalPeraContributions.toLocaleString()}</p>
+            <div className="money-progress">
+              <span>Retirement goal progress · {peraGoalProgress}%</span>
+              <div className="bar-track">
+                <span style={{ width: `${Math.min(100, peraGoalProgress)}%` }} />
+              </div>
+            </div>
+            {showPeraAccounts && (
+              <ul className="money-expand-list">
+                {peraAccounts.map((account) => (
+                  <li key={account.id}>
+                    <strong>{account.name}</strong>
+                    <span>
+                      ₱{account.value.toLocaleString(undefined, { maximumFractionDigits: 2 })} · {account.change >= 0 ? '+' : ''}
+                      {account.change.toFixed(1)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+
+          <article className="money-group money-group--managed">
+            <div className="money-group-head">
+              <h4>Managed Portfolios</h4>
+              <button type="button" onClick={() => setShowManagedPortfolios((value) => !value)}>
+                {showManagedPortfolios ? 'Hide portfolios' : 'Expand portfolios'}
+              </button>
+            </div>
+            <p className="money-total">₱{managedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p>
+              Total invested: ₱{managedTotalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })} ·
+              <span className={managedPerformancePct >= 0 ? 'positive' : 'negative'}> {managedPerformancePct >= 0 ? '+' : ''}{managedPerformancePct}%</span>
+            </p>
+            <ul className="money-preview-list">
+              {managedTop.map((portfolio) => (
+                <li key={portfolio.id}>
+                  <span>{portfolio.name}</span>
+                  <small>₱{portfolio.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</small>
+                </li>
+              ))}
+            </ul>
+            {showManagedPortfolios && (
+              <ul className="money-expand-list">
+                {managedPortfolios.map((portfolio) => (
+                  <li key={portfolio.id}>
+                    <strong>{portfolio.name}</strong>
+                    <span>
+                      ₱{portfolio.value.toLocaleString(undefined, { maximumFractionDigits: 2 })} · Invested ₱
+                      {portfolio.invested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+        </div>
       </section>
 
-      <section className="card">
-        <h3>Recent Transactions</h3>
-        <ul className="list">
-          {transactions.map((item) => (
-            <li key={item.id}>
-              <div>
-                <strong>{item.action}</strong>
-                <p>
-                  {item.asset} · {item.date}
-                </p>
-              </div>
-              <span>{item.value}</span>
-            </li>
-          ))}
+      <section className="card span-3 dashboard-insights-card">
+        <h3>Insights</h3>
+        <ul className="list dashboard-insights-list">
+          <li>
+            <div>
+              <strong>You’re {equitiesExposurePct}% allocated to equities</strong>
+              <p>{equitiesExposurePct >= 60 ? 'High risk posture detected.' : 'Risk posture remains moderate.'}</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>You’ve contributed ₱{totalPeraContributions.toLocaleString()} to PERA this year</strong>
+              <p>{peraGoalProgress >= 50 ? 'On track for your retirement target pace.' : 'Consider increasing monthly PERA contributions.'}</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>
+                {retirementGap > 0
+                  ? `You’re behind your retirement goal by ₱${retirementGap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                  : 'You have reached your retirement goal'}
+              </strong>
+              <p>Goal benchmark: ₱{retirementGoal.toLocaleString()}.</p>
+            </div>
+          </li>
         </ul>
       </section>
     </div>
@@ -1055,7 +1146,7 @@ function App() {
       <section className="card">
         <h3>{selectedStock.name}</h3>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
-          <path d={chartPath(selectedStock.series[range])} />
+          <path d={chartPath(selectedStock.series[tradingRange])} />
         </svg>
         <div className="metric-grid">
           <p>

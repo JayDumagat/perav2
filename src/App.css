@@ -380,7 +380,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  height: 62px;
+  height: var(--header-height);
   gap: 16px;
 }
 
@@ -568,6 +568,7 @@
 }
 
 .dashboard-grid,
+.dashboard-unified,
 .pera-grid,
 .learning-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -681,6 +682,199 @@ button.active,
   border-radius: var(--radius-sm);
 }
 
+/* ── DASHBOARD V2 ────────────────────────────────────── */
+.dashboard-unified {
+  gap: 18px;
+}
+
+.dashboard-summary-card {
+  gap: 14px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 50%),
+    linear-gradient(155deg, var(--panel), var(--panel-strong));
+}
+
+.dashboard-summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.summary-anchor {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.dashboard-summary-card > strong {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--text-strong);
+}
+
+.dashboard-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dashboard-summary-metrics article {
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 88%, var(--panel-strong));
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 5px;
+}
+
+.dashboard-summary-metrics span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.dashboard-summary-metrics p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboard-summary-metrics small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dashboard-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: calc(var(--header-height) + 10px);
+  z-index: 30;
+  backdrop-filter: blur(8px);
+}
+
+.dashboard-action-bar button {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.dashboard-performance-card {
+  gap: 14px;
+}
+
+.dashboard-performance-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dashboard-unified-chart {
+  height: 230px;
+}
+
+.money-group-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.money-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.money-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.money-group-head h4 {
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.money-group-head button {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.money-total {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-strong);
+  letter-spacing: -0.4px;
+}
+
+.money-preview-list,
+.money-expand-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.money-preview-list li,
+.money-expand-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.money-preview-list li small,
+.money-expand-list li span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.money-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.money-progress > span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dashboard-insights-list li {
+  align-items: flex-start;
+}
+
+.dashboard-insights-list strong {
+  color: var(--text-strong);
+}
+
+.dashboard-insights-list p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
 /* ── HEADING ROW ────────────────────────────────────── */
 .heading-row {
   display: flex;
@@ -1046,6 +1240,7 @@ label {
   }
 
   .dashboard-grid,
+  .dashboard-unified,
   .trading-grid,
   .pera-grid,
   .learning-grid {
@@ -1071,6 +1266,16 @@ label {
 
   .two-col {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-summary-metrics,
+  .money-group-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-action-bar {
+    top: auto;
+    bottom: 10px;
   }
 }
 
