@@ -2031,21 +2031,25 @@ function App() {
             >
               <img src={item.image} alt={item.title} className="learning-content-image" />
               <div className="learning-content-overlay">
-                <div className="learning-content-meta">
-                  <span className="learning-chip">{learningTypeLabel[item.type]}</span>
-                  <span>{item.topic}</span>
-                </div>
-                <h4>{item.title}</h4>
-                <p>{item.description}</p>
-                <div className="allocation-row learning-progress-row">
-                  <span>Progress</span>
-                  <span>{item.progress}%</span>
-                  <div className="bar-track">
-                    <span style={{ width: `${item.progress}%` }} />
+                <div className="learning-content-top">
+                  <div className="learning-content-meta">
+                    <span className="learning-chip">{learningTypeLabel[item.type]}</span>
+                    <span className="learning-topic-chip">{item.topic}</span>
                   </div>
+                  <small className="learning-content-duration">{item.duration}</small>
+                </div>
+                <div className="learning-content-body">
+                  <h4>{item.title}</h4>
+                  <p>{item.description}</p>
                 </div>
                 <div className="learning-content-footer">
-                  <small>{item.duration}</small>
+                  <div className="allocation-row learning-progress-row">
+                    <span>Progress</span>
+                    <span>{item.progress}%</span>
+                    <div className="bar-track">
+                      <span style={{ width: `${item.progress}%` }} />
+                    </div>
+                  </div>
                   <div className="learning-reaction-group">
                     <button
                       type="button"
