@@ -749,7 +749,7 @@ button.active,
 
 /* ── CHART ──────────────────────────────────────────── */
 .chart-card {
-  min-height: 270px;
+  min-height: 340px;
 }
 
 .chart {
@@ -765,6 +765,20 @@ button.active,
   stroke: var(--accent);
   stroke-width: 2;
   fill: none;
+}
+
+.tv-chart {
+  width: 100%;
+  min-height: 300px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+}
+
+.tv-chart-host {
+  width: 100%;
+  height: 300px;
 }
 
 /* ── TABLE ──────────────────────────────────────────── */
@@ -828,6 +842,61 @@ th:last-child {
 
 .list li:hover {
   background: var(--border);
+}
+
+.snippet-list li {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.snippet-list small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.snippet-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.snippet-metric {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.snippet-metric span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.snippet-metric strong {
+  color: var(--text-strong);
+}
+
+.snippet-metric p {
+  font-size: 13px;
+}
+
+.snippet-spotlight {
+  background: linear-gradient(135deg, var(--panel), var(--panel-strong));
+}
+
+.snippet-chip {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* ── STOCK LIST ─────────────────────────────────────── */
@@ -1001,6 +1070,201 @@ label {
   }
 
   .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── PERA PAGE ──────────────────────────────────────── */
+.pera-kpi-row {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.pera-kpi {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+  padding: 18px 20px;
+  border-right: 1px solid var(--border);
+}
+
+.pera-kpi:last-child {
+  border-right: none;
+}
+
+.pera-kpi--compact {
+  padding-bottom: 4px;
+}
+
+.pera-kpi span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
+.pera-kpi strong {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-strong);
+  letter-spacing: -0.5px;
+}
+
+.pera-kpi p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pera-fund-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pera-fund-badge--balanced {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.pera-fund-badge--equity {
+  background: rgba(52, 211, 153, 0.15);
+  color: #059669;
+}
+
+.pera-fund-badge--bond {
+  background: rgba(110, 231, 183, 0.15);
+  color: #047857;
+}
+
+.pera-pace-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.pera-contrib-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100px;
+}
+
+.pera-contrib-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.pera-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: var(--panel-strong);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  overflow: hidden;
+}
+
+.pera-bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  transition: height 0.4s ease;
+}
+
+.pera-return-label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.pera-return-input {
+  width: 72px;
+}
+
+.pera-contrib-col span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pera-milestone-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--panel-strong);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pera-milestone-badge--done {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.pera-milestone--done {
+  opacity: 0.55;
+}
+
+.pera-tax-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pera-tax-card {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.pera-tax-card strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.pera-tax-card p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .pera-kpi-row {
+    flex-direction: column;
+  }
+
+  .pera-kpi {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pera-kpi:last-child {
+    border-bottom: none;
+  }
+
+  .pera-tax-grid {
     grid-template-columns: 1fr;
   }
 }
