@@ -122,6 +122,7 @@ const learningPaths = [
 // ── PERA DATA ─────────────────────────────────────────────────────────────────
 
 type PeraHolding = {
+  accountId: string
   fund: string
   type: string
   units: number
@@ -136,10 +137,15 @@ type PeraContribMonth = {
   target: number
 }
 
-type PeraFundAlloc = {
-  label: string
-  pct: number
-  color: string
+type PeraAccount = {
+  id: string
+  name: string
+  institution: string
+  strategy: string
+  value: number
+  ytdContrib: number
+  yearlyTarget: number
+  change: number
 }
 
 type PeraMilestone = {
@@ -149,26 +155,83 @@ type PeraMilestone = {
   reached: boolean
 }
 
-const peraHoldings: PeraHolding[] = [
-  { fund: 'BPI Retirement Core Fund', type: 'Balanced', units: 82340, navps: 0.6218, value: 51219.21, gain: 12.4 },
-  { fund: 'BDO Equity Retirement Fund', type: 'Equity', units: 43800, navps: 0.4102, value: 17966.76, gain: 9.7 },
-  { fund: 'Sun Life PERA Bond Fund', type: 'Bond', units: 19200, navps: 0.8904, value: 17095.68, gain: 4.1 },
+const MAX_PERA_ACCOUNTS = 5
+
+const initialPeraAccounts: PeraAccount[] = [
+  {
+    id: 'pera-1',
+    name: 'Core Retirement',
+    institution: 'BPI',
+    strategy: 'Balanced',
+    value: 86281.65,
+    ytdContrib: 4600,
+    yearlyTarget: 9600,
+    change: 11.2,
+  },
+  {
+    id: 'pera-2',
+    name: 'Growth Track',
+    institution: 'BDO',
+    strategy: 'Equity tilt',
+    value: 41824.45,
+    ytdContrib: 5200,
+    yearlyTarget: 9600,
+    change: 9.4,
+  },
+  {
+    id: 'pera-3',
+    name: 'Income Shield',
+    institution: 'Sun Life',
+    strategy: 'Bond-focused',
+    value: 23318.12,
+    ytdContrib: 3600,
+    yearlyTarget: 9600,
+    change: 4.6,
+  },
 ]
 
-const peraContribHistory: PeraContribMonth[] = [
-  { month: 'Nov', amount: 800, target: 800 },
-  { month: 'Dec', amount: 800, target: 800 },
-  { month: 'Jan', amount: 900, target: 800 },
-  { month: 'Feb', amount: 800, target: 800 },
-  { month: 'Mar', amount: 900, target: 800 },
-  { month: 'Apr', amount: 400, target: 800 },
-]
+const initialPeraHoldingsByAccount: Record<string, PeraHolding[]> = {
+  'pera-1': [
+    { accountId: 'pera-1', fund: 'BPI Retirement Core Fund', type: 'Balanced', units: 82340, navps: 0.6218, value: 51219.21, gain: 12.4 },
+    { accountId: 'pera-1', fund: 'BDO Equity Retirement Fund', type: 'Equity', units: 43800, navps: 0.4102, value: 17966.76, gain: 9.7 },
+    { accountId: 'pera-1', fund: 'Sun Life PERA Bond Fund', type: 'Bond', units: 19200, navps: 0.8904, value: 17095.68, gain: 4.1 },
+  ],
+  'pera-2': [
+    { accountId: 'pera-2', fund: 'ATRAM Global Equity PERA', type: 'Equity', units: 22600, navps: 0.9584, value: 21660.16, gain: 10.3 },
+    { accountId: 'pera-2', fund: 'BPI Select Balanced Fund', type: 'Balanced', units: 30800, navps: 0.6542, value: 20164.36, gain: 8.6 },
+  ],
+  'pera-3': [
+    { accountId: 'pera-3', fund: 'Sun Life Bond PERA', type: 'Bond', units: 17400, navps: 0.9372, value: 16307.28, gain: 4.2 },
+    { accountId: 'pera-3', fund: 'BPI Stable Income PERA', type: 'Balanced', units: 12380, navps: 0.5663, value: 7010.84, gain: 5.1 },
+  ],
+}
 
-const peraFundAlloc: PeraFundAlloc[] = [
-  { label: 'Balanced', pct: 59, color: '#2dd4bf' },
-  { label: 'Equity', pct: 21, color: '#34d399' },
-  { label: 'Bond', pct: 20, color: '#6ee7b7' },
-]
+const initialPeraContribByAccount: Record<string, PeraContribMonth[]> = {
+  'pera-1': [
+    { month: 'Nov', amount: 800, target: 800 },
+    { month: 'Dec', amount: 800, target: 800 },
+    { month: 'Jan', amount: 900, target: 800 },
+    { month: 'Feb', amount: 800, target: 800 },
+    { month: 'Mar', amount: 900, target: 800 },
+    { month: 'Apr', amount: 400, target: 800 },
+  ],
+  'pera-2': [
+    { month: 'Nov', amount: 800, target: 800 },
+    { month: 'Dec', amount: 1000, target: 800 },
+    { month: 'Jan', amount: 900, target: 800 },
+    { month: 'Feb', amount: 1000, target: 800 },
+    { month: 'Mar', amount: 900, target: 800 },
+    { month: 'Apr', amount: 600, target: 800 },
+  ],
+  'pera-3': [
+    { month: 'Nov', amount: 600, target: 800 },
+    { month: 'Dec', amount: 600, target: 800 },
+    { month: 'Jan', amount: 700, target: 800 },
+    { month: 'Feb', amount: 600, target: 800 },
+    { month: 'Mar', amount: 700, target: 800 },
+    { month: 'Apr', amount: 400, target: 800 },
+  ],
+}
 
 const peraMilestones: PeraMilestone[] = [
   { year: 2026, label: '₱100K PERA milestone', projected: 100000, reached: false },
@@ -421,6 +484,19 @@ function chartPath(points: number[]) {
 }
 
 const PERA_PROJECTION_YEARS = 25
+const DEFAULT_CHART_MAX_VALUE = 1
+const SEED_CONTRIB_BASE_MULTIPLIER = 0.85
+const SEED_CONTRIB_STEP_MULTIPLIER = 0.03
+const SEED_HOLDING_BASE_MULTIPLIER = 0.38
+const SEED_HOLDING_STEP_MULTIPLIER = 0.06
+const PRIMARY_SEEDED_FUND_INDEX = 0
+const SEED_FUND_NAME_PREFIX = 'Starter PERA Core Fund'
+const DEFAULT_FUND_COLOR = '#6ee7b7'
+const FUND_TYPE_COLORS: Record<string, string> = {
+  Balanced: '#2dd4bf',
+  Equity: '#34d399',
+  Bond: DEFAULT_FUND_COLOR,
+}
 
 function growthProjection(current: number, monthly: number, years: number, annualReturn: number) {
   const months = years * 12
@@ -430,6 +506,15 @@ function growthProjection(current: number, monthly: number, years: number, annua
     value = value * (1 + monthlyRate) + monthly
   }
   return value
+}
+
+function getScalingFactor(seedNumber: number, baseMultiplier: number, stepMultiplier: number) {
+  return baseMultiplier + seedNumber * stepMultiplier
+}
+
+function safePercentage(numerator: number, denominator: number) {
+  if (denominator <= 0) return 0
+  return Math.round((numerator / denominator) * 100)
 }
 
 function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) {
@@ -495,6 +580,10 @@ function App() {
   const [quizAnswer, setQuizAnswer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [dashboardSymbol, setDashboardSymbol] = useState(marketBriefs[0].symbol)
+  const [peraAccounts, setPeraAccounts] = useState(initialPeraAccounts)
+  const [activePeraAccountId, setActivePeraAccountId] = useState(initialPeraAccounts[0].id)
+  const [peraHoldingsByAccount, setPeraHoldingsByAccount] = useState(initialPeraHoldingsByAccount)
+  const [peraContribByAccount, setPeraContribByAccount] = useState(initialPeraContribByAccount)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedStock = useMemo(
@@ -516,6 +605,58 @@ function App() {
     () => growthProjection(32600, monthlyContribution, PERA_PROJECTION_YEARS, annualReturn),
     [annualReturn, monthlyContribution],
   )
+  const activePeraAccount = useMemo(() => peraAccounts.find((account) => account.id === activePeraAccountId) ?? null, [activePeraAccountId, peraAccounts])
+  const activePeraHoldings = useMemo<PeraHolding[]>(() => {
+    if (!activePeraAccount) return []
+    return peraHoldingsByAccount[activePeraAccount.id] ?? []
+  }, [activePeraAccount, peraHoldingsByAccount])
+  const activePeraContrib = useMemo<PeraContribMonth[]>(() => {
+    if (!activePeraAccount) return []
+    return peraContribByAccount[activePeraAccount.id] ?? []
+  }, [activePeraAccount, peraContribByAccount])
+
+  function addPeraAccount() {
+    setPeraAccounts((previous) => {
+      if (previous.length >= MAX_PERA_ACCOUNTS) return previous
+      const nextNumber = previous.length + 1
+      const nextId = `pera-${nextNumber}`
+      const contributionScalingFactor = getScalingFactor(nextNumber, SEED_CONTRIB_BASE_MULTIPLIER, SEED_CONTRIB_STEP_MULTIPLIER)
+      const holdingScalingFactor = getScalingFactor(nextNumber, SEED_HOLDING_BASE_MULTIPLIER, SEED_HOLDING_STEP_MULTIPLIER)
+      const seededContrib = initialPeraContribByAccount['pera-1'].map((entry) => ({
+        ...entry,
+        amount: Math.round(entry.amount * contributionScalingFactor),
+      }))
+      const seededHoldings = initialPeraHoldingsByAccount['pera-1'].map((holding, index) => ({
+        ...holding,
+        accountId: nextId,
+        fund: index === PRIMARY_SEEDED_FUND_INDEX ? `${SEED_FUND_NAME_PREFIX} ${nextNumber}` : holding.fund,
+        value: Number((holding.value * holdingScalingFactor).toFixed(2)),
+        gain: Number((holding.gain * holdingScalingFactor).toFixed(1)),
+      }))
+
+      setPeraContribByAccount((existing) => ({ ...existing, [nextId]: seededContrib }))
+      setPeraHoldingsByAccount((existing) => ({ ...existing, [nextId]: seededHoldings }))
+      setActivePeraAccountId(nextId)
+
+      const ytdContrib = seededContrib.reduce((sum, item) => sum + item.amount, 0)
+      const yearlyTarget = seededContrib.reduce((sum, item) => sum + item.target, 0)
+      const value = seededHoldings.reduce((sum, item) => sum + item.value, 0)
+
+      return [
+        ...previous,
+        {
+          id: nextId,
+          name: `PERA Account ${nextNumber}`,
+          institution: 'Custom',
+          strategy: 'Balanced',
+          value,
+          ytdContrib,
+          yearlyTarget,
+          change: 6.2,
+        },
+      ]
+    })
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -992,20 +1133,96 @@ function App() {
     </div>
   )
 
-  const totalPeraValue = peraHoldings.reduce((sum, h) => sum + h.value, 0)
-  const ytdContrib = peraContribHistory.reduce((sum, m) => sum + m.amount, 0)
-  const ytdTarget = peraContribHistory.reduce((sum, m) => sum + m.target, 0)
-  const contribPct = Math.round((ytdContrib / ytdTarget) * 100)
-  const maxContrib = Math.max(...peraContribHistory.map((m) => m.target))
+  const totalPeraValue = activePeraHoldings.reduce((sum, h) => sum + h.value, 0)
+  const ytdContrib = activePeraContrib.reduce((sum, m) => sum + m.amount, 0)
+  const ytdTarget = activePeraContrib.reduce((sum, m) => sum + m.target, 0)
+  const contribPct = safePercentage(ytdContrib, ytdTarget)
+  const maxContrib = activePeraContrib.length
+    ? Math.max(...activePeraContrib.map((m) => m.target))
+    : DEFAULT_CHART_MAX_VALUE
+  const activeFundAlloc = Object.entries(
+    activePeraHoldings.reduce<Record<string, number>>((totals, holding) => {
+      totals[holding.type] = (totals[holding.type] ?? 0) + holding.value
+      return totals
+    }, {}),
+  ).map(([label, value]) => ({
+    label,
+    pct: safePercentage(value, totalPeraValue),
+    color: FUND_TYPE_COLORS[label] ?? DEFAULT_FUND_COLOR,
+  }))
+  const accountSlotsLeft = Math.max(0, MAX_PERA_ACCOUNTS - peraAccounts.length)
 
   const peraView = (
     <div className="grid pera-grid">
+      <section className="card span-3 pera-hero">
+        <div>
+          <span className="pera-hero-tag">PERA Accounts</span>
+          <h3>Manage up to {MAX_PERA_ACCOUNTS} retirement accounts in one sleek workspace</h3>
+          <p>Track balances, monitor contributions, and compare performance across all PERA providers in real time.</p>
+        </div>
+        <div className="pera-hero-meta">
+          <div>
+            <small>Active accounts</small>
+            <strong>
+              {peraAccounts.length}/{MAX_PERA_ACCOUNTS}
+            </strong>
+          </div>
+          <button
+            type="button"
+            className="primary pera-add-account-btn"
+            onClick={addPeraAccount}
+            disabled={peraAccounts.length >= MAX_PERA_ACCOUNTS}
+          >
+            {peraAccounts.length >= MAX_PERA_ACCOUNTS ? 'Account limit reached' : 'Add account'}
+          </button>
+        </div>
+      </section>
+
+      <section className="card span-3 pera-accounts">
+        <div className="heading-row">
+          <h3>Account Portfolio</h3>
+          <span className="pera-pace-badge">
+            {accountSlotsLeft > 0 ? `${accountSlotsLeft} slot${accountSlotsLeft > 1 ? 's' : ''} available` : 'Maximum reached'}
+          </span>
+        </div>
+        <div className="pera-account-grid">
+          {peraAccounts.map((account) => {
+            const pace = safePercentage(account.ytdContrib, account.yearlyTarget)
+            return (
+              <button
+                key={account.id}
+                type="button"
+                className={`pera-account-card ${activePeraAccountId === account.id ? 'active' : ''}`}
+                onClick={() => setActivePeraAccountId(account.id)}
+              >
+                <div className="pera-account-header">
+                  <strong>{account.name}</strong>
+                  <span>{account.institution}</span>
+                </div>
+                <p>{account.strategy}</p>
+                <h4>₱{account.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</h4>
+                <div className="pera-account-foot">
+                  <small>{pace}% pace</small>
+                  <small className={account.change >= 0 ? 'positive' : 'negative'}>
+                    {account.change >= 0 ? '+' : ''}
+                    {account.change.toFixed(1)}%
+                  </small>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
       {/* ── KPI Summary Row ─────────────────────────────── */}
       <section className="card span-3 pera-kpi-row">
         <div className="pera-kpi">
           <span>Total PERA Value</span>
           <strong>₱{totalPeraValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
-          <p className="positive">+11.2% over 12 months</p>
+          <p className={activePeraAccount?.change && activePeraAccount.change >= 0 ? 'positive' : 'negative'}>
+            {activePeraAccount?.change && activePeraAccount.change >= 0 ? '+' : ''}
+            {(activePeraAccount?.change ?? 0).toFixed(1)}% over 12 months
+          </p>
         </div>
         <div className="pera-kpi">
           <span>YTD Contributions</span>
@@ -1026,7 +1243,7 @@ function App() {
 
       {/* ── Holdings ─────────────────────────────────────── */}
       <section className="card span-2">
-        <h3>Holdings</h3>
+        <h3>{activePeraAccount?.name} Holdings</h3>
         <table>
           <thead>
             <tr>
@@ -1039,18 +1256,26 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {peraHoldings.map((h) => (
-              <tr key={h.fund}>
-                <td>{h.fund}</td>
-                <td>
-                  <span className={`pera-fund-badge pera-fund-badge--${h.type.toLowerCase()}`}>{h.type}</span>
+            {activePeraHoldings.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="pera-empty-state">
+                  No holdings yet for this account.
                 </td>
-                <td>{h.units.toLocaleString()}</td>
-                <td>₱{h.navps.toFixed(4)}</td>
-                <td>₱{h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                <td className={h.gain >= 0 ? 'positive' : 'negative'}>{h.gain >= 0 ? `+${h.gain}` : h.gain}%</td>
               </tr>
-            ))}
+            ) : (
+              activePeraHoldings.map((h) => (
+                <tr key={h.fund}>
+                  <td>{h.fund}</td>
+                  <td>
+                    <span className={`pera-fund-badge pera-fund-badge--${h.type.toLowerCase()}`}>{h.type}</span>
+                  </td>
+                  <td>{h.units.toLocaleString()}</td>
+                  <td>₱{h.navps.toFixed(4)}</td>
+                  <td>₱{h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                  <td className={h.gain >= 0 ? 'positive' : 'negative'}>{h.gain >= 0 ? `+${h.gain}` : h.gain}%</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
@@ -1058,7 +1283,7 @@ function App() {
       {/* ── Fund Allocation ───────────────────────────────── */}
       <section className="card">
         <h3>Fund Allocation</h3>
-        {peraFundAlloc.map((item) => (
+        {activeFundAlloc.map((item) => (
           <div key={item.label} className="allocation-row">
             <span>{item.label}</span>
             <span>{item.pct}%</span>
@@ -1087,7 +1312,7 @@ function App() {
           <span className="pera-pace-badge">{contribPct}% of pace</span>
         </div>
         <div className="pera-contrib-bars">
-          {peraContribHistory.map((m) => (
+          {activePeraContrib.map((m) => (
             <div key={m.month} className="pera-contrib-col">
               <div className="pera-bar-wrap">
                 <div
