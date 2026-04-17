@@ -743,6 +743,7 @@ function App() {
   const [peraHoldingsByAccount, setPeraHoldingsByAccount] = useState(initialPeraHoldingsByAccount)
   const [peraContribByAccount, setPeraContribByAccount] = useState(initialPeraContribByAccount)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const learningModalRef = useRef<HTMLDivElement>(null)
   const isSponsoredPausedRef = useRef(false)
   const sponsoredElapsedRef = useRef(0)
 
@@ -846,7 +847,7 @@ function App() {
     })
   }
 
-  function setLearningReaction(itemId: string, reaction: 'like' | 'dislike') {
+  function toggleLearningReaction(itemId: string, reaction: 'like' | 'dislike') {
     setLearningFeedback((previous) => ({
       ...previous,
       [itemId]: previous[itemId] === reaction ? null : reaction,
@@ -900,6 +901,11 @@ function App() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [dropdownOpen])
+
+  useEffect(() => {
+    if (!selectedLearningContentId) return
+    learningModalRef.current?.focus()
+  }, [selectedLearningContentId])
 
   const mainNav = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
@@ -2034,7 +2040,7 @@ function App() {
                     className={learningFeedback[item.id] === 'like' ? 'active' : ''}
                     onClick={(event) => {
                       event.stopPropagation()
-                      setLearningReaction(item.id, 'like')
+                      toggleLearningReaction(item.id, 'like')
                     }}
                     aria-label={`Like ${item.title}`}
                   >
@@ -2045,7 +2051,7 @@ function App() {
                     className={learningFeedback[item.id] === 'dislike' ? 'active' : ''}
                     onClick={(event) => {
                       event.stopPropagation()
-                      setLearningReaction(item.id, 'dislike')
+                      toggleLearningReaction(item.id, 'dislike')
                     }}
                     aria-label={`Dislike ${item.title}`}
                   >
@@ -2089,11 +2095,13 @@ function App() {
               setSelectedLearningContentId(null)
             }
           }}
-          role="button"
-          tabIndex={0}
-          aria-label="Close learning content details"
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          ref={learningModalRef}
+          aria-label={`${selectedLearningContent.title} details`}
         >
-          <div className="card learning-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+          <div className="card learning-modal" onClick={(event) => event.stopPropagation()} role="document">
             <img src={selectedLearningContent.image} alt={selectedLearningContent.title} className="learning-modal-image" />
             <div className="learning-content-meta">
               <span className="learning-chip">{learningTypeLabel[selectedLearningContent.type]}</span>
@@ -2112,7 +2120,7 @@ function App() {
               <button
                 type="button"
                 className={learningFeedback[selectedLearningContent.id] === 'like' ? 'active' : ''}
-                onClick={() => setLearningReaction(selectedLearningContent.id, 'like')}
+                onClick={() => toggleLearningReaction(selectedLearningContent.id, 'like')}
                 aria-label={`Like ${selectedLearningContent.title}`}
               >
                 👍 Like
@@ -2120,7 +2128,7 @@ function App() {
               <button
                 type="button"
                 className={learningFeedback[selectedLearningContent.id] === 'dislike' ? 'active' : ''}
-                onClick={() => setLearningReaction(selectedLearningContent.id, 'dislike')}
+                onClick={() => toggleLearningReaction(selectedLearningContent.id, 'dislike')}
                 aria-label={`Dislike ${selectedLearningContent.title}`}
               >
                 👎 Dislike
