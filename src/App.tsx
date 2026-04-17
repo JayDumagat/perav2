@@ -2090,18 +2090,22 @@ function App() {
         <div
           className="learning-modal-overlay"
           onClick={() => setSelectedLearningContentId(null)}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              setSelectedLearningContentId(null)
-            }
-          }}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={0}
-          ref={learningModalRef}
-          aria-label={`${selectedLearningContent.title} details`}
+          role="presentation"
         >
-          <div className="card learning-modal" onClick={(event) => event.stopPropagation()} role="document">
+          <div
+            className="card learning-modal"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                setSelectedLearningContentId(null)
+              }
+            }}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            ref={learningModalRef}
+            aria-label={`${selectedLearningContent.title} details`}
+          >
             <img src={selectedLearningContent.image} alt={selectedLearningContent.title} className="learning-modal-image" />
             <div className="learning-content-meta">
               <span className="learning-chip">{learningTypeLabel[selectedLearningContent.type]}</span>
