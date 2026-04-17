@@ -1418,16 +1418,75 @@ label {
 }
 
 .learning-content-card {
+  position: relative;
+  overflow: hidden;
   cursor: pointer;
-  gap: 10px;
+  gap: 0;
+  padding: 0;
+  min-height: 280px;
 }
 
 .learning-content-image {
+  display: block;
   width: 100%;
-  height: 148px;
-  border-radius: var(--radius-sm);
+  height: 100%;
+  min-height: 280px;
+  border-radius: inherit;
   object-fit: cover;
-  border: 1px solid var(--border);
+  border: 0;
+}
+
+.learning-content-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: end;
+  gap: 10px;
+  padding: 14px;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    rgba(3, 12, 31, 0.08) 15%,
+    rgba(3, 12, 31, 0.74) 60%,
+    rgba(3, 12, 31, 0.92) 100%
+  );
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.learning-content-card:hover .learning-content-overlay,
+.learning-content-card:focus-visible .learning-content-overlay,
+.learning-content-card:focus-within .learning-content-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.learning-content-overlay h4,
+.learning-content-overlay p {
+  color: #fff;
+}
+
+.learning-content-overlay .learning-content-meta {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.learning-content-overlay .learning-chip {
+  border-color: rgba(255, 255, 255, 0.48);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.learning-content-overlay .allocation-row span {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.learning-content-overlay .bar-track {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.learning-content-overlay .bar-track > span {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .learning-content-meta {
