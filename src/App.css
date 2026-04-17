@@ -1692,7 +1692,7 @@ label {
 .learning-content-body p {
   font-size: 13px;
   line-height: 1.4;
-  color: color-mix(in srgb, var(--learning-overlay-muted-text) 88%, white 12%);
+  color: color-mix(in srgb, var(--learning-overlay-muted-text) 88%, white);
 }
 
 .learning-progress-row {
