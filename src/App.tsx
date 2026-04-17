@@ -7,6 +7,12 @@ type MainPage = 'dashboard' | 'trading' | 'pera' | 'learning'
 type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
 type DashboardRange = '1M' | '6M' | '1Y' | 'All'
 type DashboardAccountFilter = 'All' | 'Trading' | 'PERA' | 'Managed'
+type SponsoredContent = {
+  title: string
+  sponsor: string
+  summary: string
+  cta: string
+}
 
 type Stock = {
   symbol: string
@@ -230,6 +236,26 @@ const peraMilestones: PeraMilestone[] = [
 
 const dashboardRanges: DashboardRange[] = ['1M', '6M', '1Y', 'All']
 const dashboardFilters: DashboardAccountFilter[] = ['All', 'Trading', 'PERA', 'Managed']
+const sponsoredContents: SponsoredContent[] = [
+  {
+    title: 'Zero-commission ETF bundle',
+    sponsor: 'Alpha Invest',
+    summary: 'Build diversified positions with no entry fees this month.',
+    cta: 'View offer',
+  },
+  {
+    title: 'Automated PERA rebalancing',
+    sponsor: 'FutureFund',
+    summary: 'Keep your retirement mix on target with quarterly auto-adjustments.',
+    cta: 'Learn more',
+  },
+  {
+    title: 'High-yield cash account',
+    sponsor: 'Crest Bank',
+    summary: 'Earn promotional rates while your funds wait for deployment.',
+    cta: 'Open account',
+  },
+]
 
 const tradingHoldings = [
   { symbol: 'NVDA', shares: 28, avgPrice: 131.4 },
@@ -530,8 +556,12 @@ function safePercentage(numerator: number, denominator: number) {
 }
 
 function App() {
-  const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-  const [theme, setTheme] = useState<Theme>(prefersDark ? 'dark' : 'light')
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light'
+    const storedTheme = window.localStorage.getItem('theme')
+    if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
   const [authStep, setAuthStep] = useState<AuthStep>('login')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [authed, setAuthed] = useState(false)
@@ -550,6 +580,7 @@ function App() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [dashboardRange, setDashboardRange] = useState<DashboardRange>('1Y')
   const [dashboardFilter, setDashboardFilter] = useState<DashboardAccountFilter>('All')
+  const [sponsoredIndex, setSponsoredIndex] = useState(0)
   const [showPeraAccounts, setShowPeraAccounts] = useState(false)
   const [showManagedPortfolios, setShowManagedPortfolios] = useState(false)
   const [peraAccounts, setPeraAccounts] = useState(initialPeraAccounts)
@@ -651,7 +682,17 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.style.colorScheme = theme
+    window.localStorage.setItem('theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSponsoredIndex((previous) => (previous + 1) % sponsoredContents.length)
+    }, 5000)
+
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -925,10 +966,11 @@ function App() {
     totalNetWorth,
   )
   const equitiesExposurePct = equitiesExposure
+  const activeSponsoredContent = sponsoredContents[sponsoredIndex]
 
   const dashboardView = (
     <div className="grid dashboard-unified">
-      <section className="card span-3 dashboard-summary-card">
+      <section className="card span-2 dashboard-summary-card">
         <div className="dashboard-summary-top">
           <h3>Global Summary</h3>
           <span className="summary-anchor">Trading + PERA + Managed</span>
@@ -959,7 +1001,38 @@ function App() {
         </div>
       </section>
 
-      <section className="card span-3 dashboard-action-bar">
+      <section className="card dashboard-sponsored-card">
+        <div className="dashboard-sponsored-top">
+          <h3>Sponsored</h3>
+          <span>
+            {sponsoredIndex + 1} / {sponsoredContents.length}
+          </span>
+        </div>
+        <article className="dashboard-sponsored-slide">
+          <p>{activeSponsoredContent.sponsor}</p>
+          <strong>{activeSponsoredContent.title}</strong>
+          <small>{activeSponsoredContent.summary}</small>
+          <button type="button" className="primary">
+            {activeSponsoredContent.cta}
+          </button>
+        </article>
+        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Sponsored content slides">
+          {sponsoredContents.map((item, index) => (
+            <button
+              key={item.title}
+              type="button"
+              role="tab"
+              aria-selected={sponsoredIndex === index}
+              className={sponsoredIndex === index ? 'active' : ''}
+              onClick={() => setSponsoredIndex(index)}
+            >
+              <span className="sr-only">{item.title}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="card span-2 dashboard-action-bar">
         <button type="button">Deposit</button>
         <button type="button">Withdraw</button>
         <button type="button">Invest in portfolio</button>
@@ -968,7 +1041,7 @@ function App() {
         </button>
       </section>
 
-      <section className="card span-3 dashboard-performance-card">
+      <section className="card span-2 dashboard-performance-card">
         <div className="heading-row">
           <h3>Performance Chart (Unified)</h3>
           <div className="dashboard-performance-controls">
@@ -1085,7 +1158,7 @@ function App() {
         </div>
       </section>
 
-      <section className="card span-3 dashboard-insights-card">
+      <section className="card dashboard-insights-card">
         <h3>Insights</h3>
         <ul className="list dashboard-insights-list">
           <li>

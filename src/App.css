@@ -546,11 +546,11 @@
 }
 
 .dropdown-item.danger {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .dropdown-item.danger:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--danger-soft);
 }
 
 /* ── CONTENT AREA ───────────────────────────────────── */
@@ -684,6 +684,8 @@ button.active,
 
 /* ── DASHBOARD V2 ────────────────────────────────────── */
 .dashboard-unified {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
   gap: 18px;
 }
 
@@ -759,10 +761,7 @@ button.active,
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  position: sticky;
-  top: calc(var(--header-height) + 10px);
-  z-index: 30;
-  backdrop-filter: blur(8px);
+  align-self: start;
 }
 
 .dashboard-action-bar button {
@@ -772,6 +771,76 @@ button.active,
 
 .dashboard-performance-card {
   gap: 14px;
+}
+
+.dashboard-sponsored-card {
+  align-self: stretch;
+  gap: 10px;
+}
+
+.dashboard-sponsored-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dashboard-sponsored-top span {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.dashboard-sponsored-slide {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(155deg, var(--panel), var(--panel-strong));
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-sponsored-slide p {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dashboard-sponsored-slide strong {
+  color: var(--text-strong);
+  font-size: 16px;
+}
+
+.dashboard-sponsored-slide small {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.dashboard-sponsored-slide .primary {
+  justify-self: start;
+  padding: 8px 12px;
+}
+
+.dashboard-sponsored-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-sponsored-dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+}
+
+.dashboard-sponsored-dots button.active {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .dashboard-performance-controls {
@@ -1218,11 +1287,11 @@ label {
 
 /* ── UTILS ──────────────────────────────────────────── */
 .positive {
-  color: #16a34a;
+  color: var(--success);
 }
 
 .negative {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .span-2 {
@@ -1274,8 +1343,7 @@ label {
   }
 
   .dashboard-action-bar {
-    top: auto;
-    bottom: 10px;
+    position: static;
   }
 }
 
@@ -1478,13 +1546,24 @@ label {
 }
 
 .pera-fund-badge--equity {
-  background: rgba(52, 211, 153, 0.15);
-  color: #059669;
+  background: var(--success-soft);
+  color: var(--success);
 }
 
 .pera-fund-badge--bond {
-  background: rgba(110, 231, 183, 0.15);
-  color: #047857;
+  background: color-mix(in srgb, var(--success-soft) 80%, var(--panel));
+  color: var(--success-strong);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .pera-pace-badge {
