@@ -2097,7 +2097,7 @@ function App() {
           }}
           role="dialog"
           aria-modal="true"
-          tabIndex={-1}
+          tabIndex={0}
           ref={learningModalRef}
           aria-label={`${selectedLearningContent.title} details`}
         >
