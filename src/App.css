@@ -1075,27 +1075,159 @@ label {
 }
 
 /* ── PERA PAGE ──────────────────────────────────────── */
+.pera-hero {
+  grid-template-columns: 1.4fr auto;
+  align-items: center;
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(45, 212, 191, 0.2), transparent 55%),
+    linear-gradient(150deg, var(--panel), var(--panel-strong));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+}
+
+.pera-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.pera-hero h3 {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+.pera-hero p {
+  max-width: 60ch;
+  color: var(--text-muted);
+}
+
+.pera-hero-meta {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.pera-hero-meta small {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.pera-hero-meta strong {
+  font-size: 28px;
+  color: var(--text-strong);
+}
+
+.pera-add-account-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pera-accounts {
+  gap: 14px;
+}
+
+.pera-account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.pera-account-card {
+  text-align: left;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+  padding: 12px 13px;
+  display: grid;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.pera-account-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.pera-account-card.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-muted) 78%, var(--panel));
+  box-shadow: var(--shadow-sm);
+}
+
+.pera-account-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.pera-account-header strong {
+  color: var(--text-strong);
+  font-size: 13px;
+}
+
+.pera-account-header span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.pera-account-card h4 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text-strong);
+}
+
+.pera-account-card p {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pera-account-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pera-account-foot small {
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .pera-kpi-row {
   display: flex;
-  gap: 0;
+  gap: 10px;
   padding: 0;
-  overflow: hidden;
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 .pera-kpi {
   flex: 1;
   display: grid;
-  gap: 4px;
+  gap: 5px;
   padding: 18px 20px;
-  border-right: 1px solid var(--border);
-}
-
-.pera-kpi:last-child {
-  border-right: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
 .pera-kpi--compact {
-  padding-bottom: 4px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 .pera-kpi span {
@@ -1117,6 +1249,12 @@ label {
   margin: 0;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.pera-empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 18px 0;
 }
 
 .pera-fund-badge {
@@ -1251,20 +1389,30 @@ label {
 }
 
 @media (max-width: 1024px) {
+  .pera-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .pera-hero-meta {
+    justify-items: start;
+  }
+
   .pera-kpi-row {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .pera-kpi {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .pera-kpi:last-child {
-    border-bottom: none;
+    min-height: 128px;
   }
 
   .pera-tax-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .pera-kpi-row {
     grid-template-columns: 1fr;
   }
 }
