@@ -2030,44 +2030,46 @@ function App() {
               }}
             >
               <img src={item.image} alt={item.title} className="learning-content-image" />
-              <div className="learning-content-meta">
-                <span className="learning-chip">{learningTypeLabel[item.type]}</span>
-                <span>{item.topic}</span>
-              </div>
-              <h4>{item.title}</h4>
-              <p>{item.description}</p>
-              <div className="allocation-row learning-progress-row">
-                <span>Progress</span>
-                <span>{item.progress}%</span>
-                <div className="bar-track">
-                  <span style={{ width: `${item.progress}%` }} />
+              <div className="learning-content-overlay">
+                <div className="learning-content-meta">
+                  <span className="learning-chip">{learningTypeLabel[item.type]}</span>
+                  <span>{item.topic}</span>
                 </div>
-              </div>
-              <div className="learning-content-footer">
-                <small>{item.duration}</small>
-                <div className="learning-reaction-group">
-                  <button
-                    type="button"
-                    className={learningFeedback[item.id] === 'like' ? 'active' : ''}
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      toggleLearningReaction(item.id, 'like')
-                    }}
-                    aria-label={`Like ${item.title}`}
-                  >
-                    👍
-                  </button>
-                  <button
-                    type="button"
-                    className={learningFeedback[item.id] === 'dislike' ? 'active' : ''}
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      toggleLearningReaction(item.id, 'dislike')
-                    }}
-                    aria-label={`Dislike ${item.title}`}
-                  >
-                    👎
-                  </button>
+                <h4>{item.title}</h4>
+                <p>{item.description}</p>
+                <div className="allocation-row learning-progress-row">
+                  <span>Progress</span>
+                  <span>{item.progress}%</span>
+                  <div className="bar-track">
+                    <span style={{ width: `${item.progress}%` }} />
+                  </div>
+                </div>
+                <div className="learning-content-footer">
+                  <small>{item.duration}</small>
+                  <div className="learning-reaction-group">
+                    <button
+                      type="button"
+                      className={learningFeedback[item.id] === 'like' ? 'active' : ''}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        toggleLearningReaction(item.id, 'like')
+                      }}
+                      aria-label={`Like ${item.title}`}
+                    >
+                      👍
+                    </button>
+                    <button
+                      type="button"
+                      className={learningFeedback[item.id] === 'dislike' ? 'active' : ''}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        toggleLearningReaction(item.id, 'dislike')
+                      }}
+                      aria-label={`Dislike ${item.title}`}
+                    >
+                      👎
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>
