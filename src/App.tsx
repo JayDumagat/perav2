@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 
 type Theme = 'light' | 'dark'
@@ -90,8 +90,8 @@ const defaultSelectedSymbol = 'TSLA'
 const defaultSelectedStock = initialStocks.find((stock) => stock.symbol === defaultSelectedSymbol) ?? initialStocks[0]
 
 const allocation = [
-  { label: 'Stocks', value: 54, color: '#1d4ed8' },
-  { label: 'Portfolios', value: 26, color: '#475569' },
+  { label: 'Stocks', value: 54, color: '#6366f1' },
+  { label: 'Portfolios', value: 26, color: '#818cf8' },
   { label: 'PERA', value: 20, color: '#0f766e' },
 ]
 
@@ -118,6 +118,222 @@ const learningPaths = [
   { label: 'Intermediate', progress: 42 },
   { label: 'Advanced', progress: 19 },
 ]
+
+// ── ICONS ────────────────────────────────────────────────────────────────────
+
+function SvgIcon({ children, size = 18 }: { children: React.ReactNode; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  )
+}
+
+function DashboardIcon() {
+  return (
+    <SvgIcon>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </SvgIcon>
+  )
+}
+
+function TradingIcon() {
+  return (
+    <SvgIcon>
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </SvgIcon>
+  )
+}
+
+function PERAIcon() {
+  return (
+    <SvgIcon>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </SvgIcon>
+  )
+}
+
+function LearningIcon() {
+  return (
+    <SvgIcon>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </SvgIcon>
+  )
+}
+
+function BellIcon() {
+  return (
+    <SvgIcon>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </SvgIcon>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <SvgIcon size={16}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </SvgIcon>
+  )
+}
+
+function SunIcon() {
+  return (
+    <SvgIcon size={16}>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </SvgIcon>
+  )
+}
+
+function ChevronDownIcon() {
+  return (
+    <SvgIcon size={14}>
+      <polyline points="6 9 12 15 18 9" />
+    </SvgIcon>
+  )
+}
+
+function SignOutIcon() {
+  return (
+    <SvgIcon size={16}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </SvgIcon>
+  )
+}
+
+function UserIcon() {
+  return (
+    <SvgIcon size={16}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </SvgIcon>
+  )
+}
+
+// ── GEOMETRIC ART PANEL ──────────────────────────────────────────────────────
+
+function GeometricPanel() {
+  const S = 90
+
+  return (
+    <div className="auth-art-side">
+      <svg
+        viewBox="0 0 540 720"
+        preserveAspectRatio="xMidYMid slice"
+        className="auth-art-svg"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Background */}
+        <rect width="540" height="720" fill="#07090f" />
+
+        {/* Cell shade variations */}
+        {([[1,0],[3,0],[5,0],[0,1],[2,1],[4,1],[1,2],[3,2],[5,2],[0,3],[2,3],[4,3],[1,4],[3,4],[5,4],[0,5],[2,5],[4,5],[1,6],[3,6],[5,6],[0,7],[2,7],[4,7]] as [number,number][]).map(([c,r]) => (
+          <rect key={`bg${c}${r}`} x={c*S} y={r*S} width={S} height={S} fill="#0d1117" />
+        ))}
+
+        {/* Row 0 */}
+        <circle cx={0*S+S/2} cy={0*S+S/2} r={32} fill="white" />
+        <polygon points={`${4*S+S/2},${0*S+12} ${4*S+S-12},${0*S+S/2} ${4*S+S/2},${0*S+S-12} ${4*S+12},${0*S+S/2}`} fill="white" />
+
+        {/* Row 1 – dots */}
+        {([0,1,2] as number[]).flatMap(r => ([0,1,2] as number[]).map(c2 => (
+          <circle key={`d11${r}${c2}`} cx={1*S+22+c2*23} cy={1*S+22+r*23} r={5} fill="#4b5563" />
+        )))}
+        {/* half-circle top */}
+        <path d={`M ${2*S+12},${1*S+S/2} A 33,33 0 0 1 ${2*S+S-12},${1*S+S/2} Z`} fill="white" />
+        {/* outline circle */}
+        <circle cx={5*S+S/2} cy={1*S+S/2} r={30} fill="none" stroke="#374151" strokeWidth="2.5" />
+
+        {/* Row 2 */}
+        {/* quarter arc – fills corner like in reference */}
+        <path d={`M ${1*S+S/2},${2*S} A ${S/2},${S/2} 0 0 1 ${1*S+S},${2*S+S/2} L ${1*S+S/2},${2*S+S/2} Z`} fill="white" />
+        <rect x={4*S+24} y={2*S+24} width={S-48} height={S-48} fill="white" />
+
+        {/* Row 3 */}
+        <circle cx={2*S+S/2} cy={3*S+S/2} r={28} fill="none" stroke="#4b5563" strokeWidth="2" />
+        <circle cx={5*S+S/2} cy={3*S+S/2} r={30} fill="white" />
+
+        {/* Row 4 */}
+        <polygon points={`${0*S+S/2},${4*S+14} ${0*S+S-14},${4*S+S/2} ${0*S+S/2},${4*S+S-14} ${0*S+14},${4*S+S/2}`} fill="#6b7280" />
+        {([0,1,2] as number[]).flatMap(r => ([0,1,2] as number[]).map(c2 => (
+          <circle key={`d34${r}${c2}`} cx={3*S+22+c2*23} cy={4*S+22+r*23} r={5} fill="#374151" />
+        )))}
+
+        {/* Row 5 */}
+        {/* half-circle bottom */}
+        <path d={`M ${1*S+12},${5*S+S/2} A 33,33 0 0 0 ${1*S+S-12},${5*S+S/2} Z`} fill="white" />
+        {/* quarter arc BR */}
+        <path d={`M ${4*S},${5*S+S/2} A ${S/2},${S/2} 0 0 1 ${4*S+S/2},${5*S+S} L ${4*S+S/2},${5*S+S/2} Z`} fill="#6b7280" />
+
+        {/* Row 6 */}
+        {/* half-circle right */}
+        <path d={`M ${3*S+S/2},${6*S+12} A 33,33 0 0 1 ${3*S+S/2},${6*S+S-12} Z`} fill="#4b5563" />
+        <polygon points={`${5*S+S/2},${6*S+12} ${5*S+S-12},${6*S+S/2} ${5*S+S/2},${6*S+S-12} ${5*S+12},${6*S+S/2}`} fill="white" />
+
+        {/* Row 7 */}
+        <rect x={0*S+20} y={7*S+20} width={S-40} height={S-40} fill="white" />
+        {([0,1,2] as number[]).flatMap(r => ([0,1,2] as number[]).map(c2 => (
+          <circle key={`d27${r}${c2}`} cx={2*S+22+c2*23} cy={7*S+22+r*23} r={5} fill="#4b5563" />
+        )))}
+        <circle cx={5*S+S/2} cy={7*S+S/2} r={28} fill="none" stroke="#374151" strokeWidth="2" />
+
+        {/* Grid lines */}
+        {([1,2,3,4,5] as number[]).map(i => (
+          <line key={`v${i}`} x1={i*S} y1="0" x2={i*S} y2="720" stroke="#0d1117" strokeWidth="1.5" />
+        ))}
+        {([1,2,3,4,5,6,7] as number[]).map(i => (
+          <line key={`h${i}`} x1="0" y1={i*S} x2="540" y2={i*S} stroke="#0d1117" strokeWidth="1.5" />
+        ))}
+
+        {/* Bottom gradient fade for text legibility */}
+        <defs>
+          <linearGradient id="artFade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="55%" stopColor="#07090f" stopOpacity="0" />
+            <stop offset="100%" stopColor="#07090f" stopOpacity="0.92" />
+          </linearGradient>
+        </defs>
+        <rect width="540" height="720" fill="url(#artFade)" />
+      </svg>
+
+      <div className="auth-art-text">
+        <div className="auth-art-badge">PERA Trade</div>
+        <h2>
+          Modern Investing
+          <br />
+          for Everyone
+        </h2>
+        <p>Stocks, portfolios, and retirement planning — all in one place.</p>
+      </div>
+    </div>
+  )
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 
 function chartPath(points: number[]) {
   if (!points.length) return ''
@@ -161,6 +377,8 @@ function App() {
   const [monthlyContribution, setMonthlyContribution] = useState(900)
   const [annualReturn, setAnnualReturn] = useState(0.08)
   const [quizAnswer, setQuizAnswer] = useState('')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedStock = useMemo(
     () => watchlist.find((stock) => stock.symbol === selected) ?? watchlist[0],
@@ -201,129 +419,199 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [dropdownOpen])
+
   const mainNav = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'trading', label: 'Trading' },
-    { id: 'pera', label: 'PERA' },
-    { id: 'learning', label: 'Learning Hub' },
+    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+    { id: 'trading', label: 'Trading', icon: <TradingIcon /> },
+    { id: 'pera', label: 'PERA', icon: <PERAIcon /> },
+    { id: 'learning', label: 'Learning Hub', icon: <LearningIcon /> },
   ] as const
 
+  const pageTitle: Record<MainPage, string> = {
+    dashboard: 'Dashboard',
+    trading: 'Trading',
+    pera: 'PERA',
+    learning: 'Learning Hub',
+  }
+
   const authView = (
-    <div className="auth-shell">
-      <aside className="auth-panel">
-        <h1>PERA Trade</h1>
-        <p>Secure investing in stocks, bundled portfolios, and retirement accounts.</p>
-        <div className="segment">
-          {(['login', 'register'] as AuthStep[]).map((step) => (
-            <button
-              key={step}
-              className={authStep === step ? 'active' : ''}
-              onClick={() => setAuthStep(step)}
-              type="button"
-            >
-              {step[0].toUpperCase() + step.slice(1)}
-            </button>
-          ))}
+    <div className="auth-root">
+      <div className="auth-form-side">
+        <div className="auth-logo">
+          <span className="logo-mark">P</span>
+          PERA Trade
         </div>
-      </aside>
 
-      <section className="card auth-card">
-        {authStep === 'login' && (
-          <>
-            <h2>Login</h2>
-            <p>Use secure credentials to access your account.</p>
-            <label>
-              Email
-              <input type="email" placeholder="name@email.com" />
-            </label>
-            <label>
-              Password
-              <input type="password" placeholder="••••••••" />
-            </label>
-            <button type="button" className="primary" onClick={() => setAuthed(true)}>
-              Sign in
-            </button>
-          </>
-        )}
+        <div className="auth-form-content">
+          <div className="auth-heading">
+            <h1>
+              {authStep === 'login' && 'Sign in to your account'}
+              {authStep === 'register' && 'Create your account'}
+            </h1>
+            <p>
+              {authStep === 'login' && 'Please continue to sign in to your investing account'}
+              {authStep === 'register' && 'Create your account in a guided, minimal flow'}
+            </p>
+          </div>
 
-        {authStep === 'register' && (
-          <>
-            <h2>Registration</h2>
-            <p>Create your account in a guided, minimal flow.</p>
-            <div className="two-col">
-              <label>
-                First name
-                <input type="text" placeholder="Jordan" />
-              </label>
-              <label>
-                Last name
-                <input type="text" placeholder="Lee" />
-              </label>
-            </div>
-            <label>
-              Email
-              <input type="email" placeholder="name@email.com" />
-            </label>
-            <label>
-              Password
-              <input type="password" placeholder="Minimum 8 characters" />
-            </label>
-            <button type="button" className="primary" onClick={() => setShowOnboarding(true)}>
-              Continue to onboarding
+          <div className="auth-tabs">
+            {(['login', 'register'] as AuthStep[]).map((step) => (
+              <button
+                key={step}
+                type="button"
+                className={`auth-tab ${authStep === step ? 'active' : ''}`}
+                onClick={() => setAuthStep(step)}
+              >
+                {step === 'login' ? 'Login' : 'Register'}
+              </button>
+            ))}
+          </div>
+
+          <div className="auth-fields">
+            {authStep === 'login' && (
+              <>
+                <div className="field-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="Enter your email" />
+                </div>
+                <div className="field-group">
+                  <label>Password</label>
+                  <input type="password" placeholder="••••••••" />
+                </div>
+                <button type="button" className="btn btn-primary" onClick={() => setAuthed(true)}>
+                  Continue
+                </button>
+              </>
+            )}
+
+            {authStep === 'register' && (
+              <>
+                <div className="two-col">
+                  <div className="field-group">
+                    <label>First name</label>
+                    <input type="text" placeholder="Jordan" />
+                  </div>
+                  <div className="field-group">
+                    <label>Last name</label>
+                    <input type="text" placeholder="Lee" />
+                  </div>
+                </div>
+                <div className="field-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="name@email.com" />
+                </div>
+                <div className="field-group">
+                  <label>Password</label>
+                  <input type="password" placeholder="Minimum 8 characters" />
+                </div>
+                <button type="button" className="btn btn-primary" onClick={() => setShowOnboarding(true)}>
+                  Continue to onboarding
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="auth-footer">
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            >
+              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+              {theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             </button>
-          </>
-        )}
-      </section>
+          </div>
+        </div>
+      </div>
+
+      <GeometricPanel />
     </div>
   )
 
   const onboardingView = (
-    <section className="card auth-card">
-      <h2>Onboarding</h2>
-      <p>Set your investing profile and initial setup path.</p>
-      <label>
-        Risk profile
-        <select>
-          <option>Conservative</option>
-          <option>Balanced</option>
-          <option>Aggressive</option>
-        </select>
-      </label>
-      <label>
-        Financial goal
-        <select>
-          <option>Capital growth</option>
-          <option>Stable income</option>
-          <option>Retirement planning</option>
-        </select>
-      </label>
-      <label>
-        Experience level
-        <select>
-          <option>Beginner</option>
-          <option>Intermediate</option>
-          <option>Advanced</option>
-        </select>
-      </label>
-      <label>
-        Initial setup preference
-        <select>
-          <option>Start with Stocks</option>
-          <option>Start with Portfolios</option>
-          <option>Start with PERA</option>
-        </select>
-      </label>
-      <button
-        type="button"
-        className="primary"
-        onClick={() => {
-          setShowOnboarding(false)
-          setAuthed(true)
-        }}
-      >
-        Finish setup
-      </button>
-    </section>
+    <div className="auth-root">
+      <div className="auth-form-side">
+        <div className="auth-logo">
+          <span className="logo-mark">P</span>
+          PERA Trade
+        </div>
+
+        <div className="auth-form-content">
+          <div className="auth-heading">
+            <h1>Set up your profile</h1>
+            <p>Set your investing profile and initial setup path</p>
+          </div>
+
+          <div className="auth-fields">
+            <div className="field-group">
+              <label>Risk profile</label>
+              <select>
+                <option>Conservative</option>
+                <option>Balanced</option>
+                <option>Aggressive</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Financial goal</label>
+              <select>
+                <option>Capital growth</option>
+                <option>Stable income</option>
+                <option>Retirement planning</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Experience level</label>
+              <select>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label>Initial setup preference</label>
+              <select>
+                <option>Start with Stocks</option>
+                <option>Start with Portfolios</option>
+                <option>Start with PERA</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                setShowOnboarding(false)
+                setAuthed(true)
+              }}
+            >
+              Finish setup
+            </button>
+          </div>
+
+          <div className="auth-footer">
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            >
+              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+              {theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <GeometricPanel />
+    </div>
   )
 
   const dashboardView = (
@@ -665,63 +953,94 @@ function App() {
   )
 
   if (!authed) {
-    return (
-      <div className="app-shell">
-        <header className="topbar">
-          <p>Modern PERA and Trading Platform</p>
-          <button type="button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-            {theme === 'light' ? 'Dark mode' : 'Light mode'}
-          </button>
-        </header>
-        {showOnboarding ? onboardingView : authView}
-      </div>
-    )
+    return showOnboarding ? onboardingView : authView
   }
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <h1>PERA Trade</h1>
-        <nav>
+        <div className="sidebar-logo">
+          <span className="logo-mark">P</span>
+          PERA Trade
+        </div>
+        <nav className="sidebar-nav">
           {mainNav.map((item) => (
             <button
               key={item.id}
               type="button"
-              className={page === item.id ? 'active' : ''}
+              className={`nav-item ${page === item.id ? 'active' : ''}`}
               onClick={() => setPage(item.id)}
             >
+              {item.icon}
               {item.label}
             </button>
           ))}
         </nav>
-        <button
-          type="button"
-          onClick={() => {
-            setAuthed(false)
-            setShowOnboarding(false)
-            setAuthStep('login')
-          }}
-        >
-          Sign out
-        </button>
-      </aside>
-
-      <main className="content">
-        <header className="topbar">
-          <div>
-            <h2>{page === 'learning' ? 'Learning Hub' : page.toUpperCase()}</h2>
-            <p>Data-first interface for stocks, portfolios, and retirement planning.</p>
-          </div>
-          <button type="button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        <div className="sidebar-footer">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
             {theme === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
+        </div>
+      </aside>
+
+      <div className="main-area">
+        <header className="app-header">
+          <div className="header-left">
+            <h2>{pageTitle[page]}</h2>
+            <p>Data-first interface for stocks, portfolios, and retirement planning.</p>
+          </div>
+          <div className="header-right">
+            <button type="button" className="icon-btn" aria-label="Notifications">
+              <BellIcon />
+              <span className="notif-badge">3</span>
+            </button>
+            <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
+              <button type="button" className="avatar-btn" onClick={() => setDropdownOpen((v) => !v)}>
+                <div className="avatar">JL</div>
+                <span>Jordan Lee</span>
+                <ChevronDownIcon />
+              </button>
+              {dropdownOpen && (
+                <div className="avatar-dropdown">
+                  <div className="dropdown-header">
+                    <strong>Jordan Lee</strong>
+                    <span>jordan@email.com</span>
+                  </div>
+                  <button type="button" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                    <UserIcon />
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item danger"
+                    onClick={() => {
+                      setAuthed(false)
+                      setShowOnboarding(false)
+                      setAuthStep('login')
+                      setDropdownOpen(false)
+                    }}
+                  >
+                    <SignOutIcon />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
 
-        {page === 'dashboard' && dashboardView}
-        {page === 'trading' && tradingView}
-        {page === 'pera' && peraView}
-        {page === 'learning' && learningView}
-      </main>
+        <div className="content-area">
+          {page === 'dashboard' && dashboardView}
+          {page === 'trading' && tradingView}
+          {page === 'pera' && peraView}
+          {page === 'learning' && learningView}
+        </div>
+      </div>
     </div>
   )
 }

@@ -19,3 +19,9 @@ npm run dev
 npm run lint
 npm run build
 ```
+
+## Deploy on Vercel
+
+- Import this repository into Vercel.
+- Vercel will use `npm run build` and publish from `dist` (configured in `vercel.json`).
+- SPA routes are rewritten to `index.html` so direct URL loads work correctly.
