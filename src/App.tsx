@@ -476,7 +476,8 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
 }
 
 function App() {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const [theme, setTheme] = useState<Theme>(prefersDark ? 'dark' : 'light')
   const [authStep, setAuthStep] = useState<AuthStep>('login')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [authed, setAuthed] = useState(false)
@@ -1047,7 +1048,7 @@ function App() {
                 <td>{h.units.toLocaleString()}</td>
                 <td>₱{h.navps.toFixed(4)}</td>
                 <td>₱{h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                <td className={h.gain >= 0 ? 'positive' : 'negative'}>{h.gain >= 0 ? '+' : ''}{h.gain}%</td>
+                <td className={h.gain >= 0 ? 'positive' : 'negative'}>{h.gain >= 0 ? `+${h.gain}` : h.gain}%</td>
               </tr>
             ))}
           </tbody>
