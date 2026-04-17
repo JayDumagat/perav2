@@ -420,6 +420,8 @@ function chartPath(points: number[]) {
     .join(' ')
 }
 
+const PERA_PROJECTION_YEARS = 25
+
 function growthProjection(current: number, monthly: number, years: number, annualReturn: number) {
   const months = years * 12
   const monthlyRate = annualReturn / 12
@@ -510,7 +512,7 @@ function App() {
   }, [limitPrice, orderType, quantity, selectedStock.price])
 
   const projected = useMemo(
-    () => growthProjection(32600, monthlyContribution, 25, annualReturn),
+    () => growthProjection(32600, monthlyContribution, PERA_PROJECTION_YEARS, annualReturn),
     [annualReturn, monthlyContribution],
   )
 
@@ -1045,7 +1047,7 @@ function App() {
                 <td>{h.units.toLocaleString()}</td>
                 <td>₱{h.navps.toFixed(4)}</td>
                 <td>₱{h.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                <td className={h.gain >= 0 ? 'positive' : 'negative'}>+{h.gain}%</td>
+                <td className={h.gain >= 0 ? 'positive' : 'negative'}>{h.gain >= 0 ? '+' : ''}{h.gain}%</td>
               </tr>
             ))}
           </tbody>
@@ -1112,14 +1114,14 @@ function App() {
       <section className="card span-2 chart-card">
         <div className="heading-row">
           <h3>Portfolio Growth Over Time</h3>
-          <label style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+          <label className="pera-return-label">
             Annual return %
             <input
               type="number"
               min={1}
               max={18}
               step="0.5"
-              style={{ width: 72 }}
+              className="pera-return-input"
               value={(annualReturn * 100).toFixed(1)}
               onChange={(event) => setAnnualReturn(Math.max(0.01, Number(event.target.value) / 100))}
             />
@@ -1133,10 +1135,10 @@ function App() {
       {/* ── Retirement Projection ────────────────────────── */}
       <section className="card">
         <h3>Retirement Projection</h3>
-        <div className="pera-kpi" style={{ paddingBottom: 4 }}>
+        <div className="pera-kpi pera-kpi--compact">
           <span>Estimated at retirement</span>
           <strong>₱{projected.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
-          <p>Based on ₱{monthlyContribution}/mo · {(annualReturn * 100).toFixed(1)}% return · 25 yr</p>
+          <p>Based on ₱{monthlyContribution}/mo · {(annualReturn * 100).toFixed(1)}% return · {PERA_PROJECTION_YEARS} yr</p>
         </div>
         <ul className="list">
           {peraMilestones.map((m) => (

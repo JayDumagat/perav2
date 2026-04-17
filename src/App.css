@@ -1094,6 +1094,10 @@ label {
   border-right: none;
 }
 
+.pera-kpi--compact {
+  padding-bottom: 4px;
+}
+
 .pera-kpi span {
   font-size: 11px;
   font-weight: 700;
@@ -1179,6 +1183,18 @@ label {
   background: var(--accent);
   border-radius: var(--radius-xs) var(--radius-xs) 0 0;
   transition: height 0.4s ease;
+}
+
+.pera-return-label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.pera-return-input {
+  width: 72px;
 }
 
 .pera-contrib-col span {
