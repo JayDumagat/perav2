@@ -376,12 +376,13 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const container = containerRef.current
+    if (!container) return
 
-    containerRef.current.innerHTML = ''
+    container.innerHTML = ''
     const widgetHost = document.createElement('div')
     widgetHost.className = 'tradingview-widget-container__widget'
-    containerRef.current.appendChild(widgetHost)
+    container.appendChild(widgetHost)
 
     const script = document.createElement('script')
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
@@ -400,10 +401,10 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
       save_image: false,
       support_host: 'https://www.tradingview.com',
     })
-    containerRef.current.appendChild(script)
+    container.appendChild(script)
 
     return () => {
-      if (containerRef.current) containerRef.current.innerHTML = ''
+      container.innerHTML = ''
     }
   }, [symbol, theme])
 
