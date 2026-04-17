@@ -6,12 +6,21 @@ type AuthStep = 'login' | 'register'
 type MainPage = 'dashboard' | 'trading' | 'pera' | 'learning'
 type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
 type DashboardRange = '1M' | '6M' | '1Y' | 'All'
-type DashboardAccountFilter = 'All' | 'Trading' | 'PERA' | 'Managed'
+type DashboardAccountFilter = 'All' | 'Trading' | 'PERA'
 type SponsoredContent = {
   title: string
   sponsor: string
   summary: string
   cta: string
+  badge: string
+  footnote: string
+}
+type DashboardActivity = {
+  id: string
+  action: string
+  account: string
+  time: string
+  amount: number
 }
 
 function parseTheme(value: string | null): Theme | null {
@@ -240,26 +249,47 @@ const peraMilestones: PeraMilestone[] = [
 ]
 
 const dashboardRanges: DashboardRange[] = ['1M', '6M', '1Y', 'All']
-const dashboardFilters: DashboardAccountFilter[] = ['All', 'Trading', 'PERA', 'Managed']
+const dashboardFilters: DashboardAccountFilter[] = ['All', 'Trading', 'PERA']
 const sponsoredContents: SponsoredContent[] = [
   {
-    title: 'Zero-commission ETF bundle',
+    title: 'Priority ETF window',
     sponsor: 'Alpha Invest',
-    summary: 'Build diversified positions with no entry fees this month.',
-    cta: 'View offer',
+    summary: 'Deploy fresh cash into diversified ETFs with zero entry fee for today’s session.',
+    cta: 'Review basket',
+    badge: 'Low friction',
+    footnote: 'Promo ends in 14h',
   },
   {
-    title: 'Automated PERA rebalancing',
+    title: 'Auto-rebalance for PERA',
     sponsor: 'FutureFund',
-    summary: 'Keep your retirement mix on target with quarterly auto-adjustments.',
-    cta: 'Learn more',
+    summary: 'Lock your target allocation and rebalance quarterly to stay aligned with retirement goals.',
+    cta: 'Enable strategy',
+    badge: 'Tax-aware',
+    footnote: 'Designed for long-term PERA accounts',
   },
   {
-    title: 'High-yield cash account',
+    title: 'Smart idle-cash sweep',
     sponsor: 'Crest Bank',
-    summary: 'Earn promotional rates while your funds wait for deployment.',
-    cta: 'Open account',
+    summary: 'Move uninvested funds nightly into a higher-yield pocket while waiting for next trades.',
+    cta: 'Activate sweep',
+    badge: 'Automated',
+    footnote: 'No lock-in period',
   },
+]
+
+const dashboardActivities: DashboardActivity[] = [
+  { id: 'a1', action: 'Bought TSLA', account: 'Trading', time: '09:42 AM', amount: -12350 },
+  { id: 'a2', action: 'PERA contribution', account: 'PERA Core Retirement', time: '08:15 AM', amount: 800 },
+  { id: 'a3', action: 'Added to Growth Leaders', account: 'Managed Portfolio', time: 'Yesterday', amount: -5000 },
+  { id: 'a4', action: 'Sold NVDA partial', account: 'Trading', time: 'Yesterday', amount: 7420 },
+  { id: 'a5', action: 'Dividend credited', account: 'Managed Income', time: '2 days ago', amount: 1340 },
+]
+
+const marketWatch = [
+  { name: 'PSEi', level: '6,845.14', change: 0.86, note: 'Financials leading' },
+  { name: 'S&P 500', level: '5,216.48', change: 0.41, note: 'Broad risk-on tone' },
+  { name: 'NASDAQ 100', level: '18,390.05', change: 0.73, note: 'AI megacaps firm' },
+  { name: 'USD/PHP', level: '56.12', change: -0.27, note: 'Peso recovering' },
 ]
 
 const tradingHoldings = [
@@ -956,6 +986,8 @@ function App() {
   const todayChangePct = safePercentage(todayChangeAmount, todayBase)
   const peraGoalProgress = safePercentage(totalPeraValueAllAccounts, retirementGoal)
   const retirementGap = Math.max(0, retirementGoal - totalPeraValueAllAccounts)
+  const projectedNetWorth = useMemo(() => growthProjection(totalNetWorth, monthlyContribution + 4200, 10, annualReturn), [annualReturn, monthlyContribution, totalNetWorth])
+  const marketBreadth = useMemo(() => safePercentage(watchlist.filter((stock) => stock.change >= 0).length, watchlist.length), [watchlist])
 
   const accountSeriesByFilter = useMemo(() => {
     const scaleByTotal = (total: number) =>
@@ -973,17 +1005,23 @@ function App() {
     return {
       Trading: tradingSeries,
       PERA: peraSeries,
-      Managed: managedSeries,
       All: allSeries,
     } as Record<DashboardAccountFilter, Record<DashboardRange, number[]>>
   }, [managedTotalValue, totalPeraValueAllAccounts, tradingMarketValue])
 
   const currentDashboardSeries = accountSeriesByFilter[dashboardFilter][dashboardRange]
-  const equitiesExposure = safePercentage(
-    tradingMarketValue + managedTotalValue * MANAGED_EQUITY_ALLOCATION + totalPeraValueAllAccounts * PERA_EQUITY_ALLOCATION,
-    totalNetWorth,
-  )
+  const stocksAmount = tradingMarketValue * 0.86 + managedTotalValue * MANAGED_EQUITY_ALLOCATION + totalPeraValueAllAccounts * PERA_EQUITY_ALLOCATION
+  const bondsAmount = tradingMarketValue * 0.04 + managedTotalValue * 0.28 + totalPeraValueAllAccounts * 0.34
+  const equitiesExposure = safePercentage(stocksAmount, totalNetWorth)
+  const bondsExposure = safePercentage(bondsAmount, totalNetWorth)
+  const cashExposure = Math.max(0, 100 - equitiesExposure - bondsExposure)
   const equitiesExposurePct = equitiesExposure
+  const dayPeriod = useMemo(() => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'morning'
+    if (hour < 18) return 'afternoon'
+    return 'evening'
+  }, [])
   const activeSponsoredContent = sponsoredContents[sponsoredIndex]
   function resumeSponsoredCarousel() {
     sponsoredElapsedRef.current = 0
@@ -1008,11 +1046,11 @@ function App() {
   }
 
   const dashboardView = (
-    <div className="grid dashboard-unified">
+    <div className="grid dashboard-unified fintech-dashboard">
       <section className="card span-2 dashboard-summary-card">
         <div className="dashboard-summary-top">
-          <h3>Global Summary</h3>
-          <span className="summary-anchor">Trading + PERA + Managed</span>
+          <h3>Net Worth Summary</h3>
+          <span className="summary-anchor">Live consolidated view</span>
         </div>
         <strong>₱{totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
         <div className="dashboard-summary-metrics">
@@ -1034,79 +1072,58 @@ function App() {
             </p>
           </article>
           <article>
-            <span>Total Contributions</span>
-            <p>₱{contributionsTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <span>Projected Value (10Y)</span>
+            <p>₱{projectedNetWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <small>Based on current net worth + recurring contributions.</small>
           </article>
         </div>
       </section>
 
-      <section
-        className="card dashboard-sponsored-card"
-        onMouseEnter={() => setIsSponsoredPaused(true)}
-        onMouseLeave={resumeSponsoredCarousel}
-        onFocusCapture={() => setIsSponsoredPaused(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-            resumeSponsoredCarousel()
-          }
-        }}
-      >
-        <div className="dashboard-sponsored-top">
-          <h3>Sponsored</h3>
-          <span>
-            {sponsoredIndex + 1} / {sponsoredContents.length}
-          </span>
-        </div>
-        <article
-          id="sponsored-slide-panel"
-          className="dashboard-sponsored-slide"
-          role="tabpanel"
-          aria-labelledby={`sponsored-dot-${sponsoredIndex}`}
-        >
-          <p>{activeSponsoredContent.sponsor}</p>
-          <strong>{activeSponsoredContent.title}</strong>
-          <small>{activeSponsoredContent.summary}</small>
-          <button type="button" className="primary">
-            {activeSponsoredContent.cta}
-          </button>
-        </article>
-        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Navigate sponsored content slides">
-          {sponsoredContents.map((item, index) => (
-            <button
-              key={item.title}
-              id={`sponsored-dot-${index}`}
-              type="button"
-              role="tab"
-              aria-controls="sponsored-slide-panel"
-              aria-selected={sponsoredIndex === index}
-              tabIndex={sponsoredIndex === index ? 0 : -1}
-              className={sponsoredIndex === index ? 'active' : ''}
-              onClick={() => goToSponsoredIndex(index)}
-              onKeyDown={(event) => handleSponsoredTabKeyDown(event, index)}
-            >
-              <span className="sr-only">{item.title}</span>
-            </button>
-          ))}
-        </div>
+      <section className="card dashboard-morning-card">
+        <h3>Morning Notes</h3>
+        <p className="dashboard-morning-greeting">Good {dayPeriod}.</p>
+        <ul className="list dashboard-note-list">
+          <li>
+            <div>
+              <strong>Focus watchlist volatility</strong>
+              <p>{marketBreadth}% of tracked names are green.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>PERA pace check</strong>
+              <p>Contribution progress is at {peraGoalProgress}% of long-term target.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Cash ready to deploy</strong>
+              <p>Use quick actions below to rebalance or add to PERA.</p>
+            </div>
+          </li>
+        </ul>
       </section>
 
-      <section className="card span-2 dashboard-action-bar">
-        <button type="button">Deposit</button>
-        <button type="button">Withdraw</button>
-        <button type="button">Invest in portfolio</button>
-        <button type="button" className="primary">
-          Contribute to PERA
-        </button>
+      <section className="card span-3 dashboard-action-bar">
+        <h3>Quick Actions</h3>
+        <div className="dashboard-action-buttons">
+          <button type="button">Deposit</button>
+          <button type="button">Withdraw</button>
+          <button type="button">Invest (managed portfolios)</button>
+          <button type="button" className="primary">
+            Contribute to PERA
+          </button>
+        </div>
       </section>
 
       <section className="card span-2 dashboard-performance-card">
         <div className="heading-row">
-          <h3>Performance Chart (Unified)</h3>
+          <h3>Performance Chart</h3>
           <div className="dashboard-performance-controls">
             <div className="segment slim">
               {dashboardRanges.map((item) => (
                 <button key={item} type="button" className={dashboardRange === item ? 'active' : ''} onClick={() => setDashboardRange(item)}>
-                  {item}
+                  {item === 'All' ? 'ALL' : item}
                 </button>
               ))}
             </div>
@@ -1124,8 +1141,29 @@ function App() {
         </svg>
       </section>
 
+      <section className="card dashboard-market-card">
+        <h3>Market Information</h3>
+        <ul className="list dashboard-market-list">
+          {marketWatch.map((item) => (
+            <li key={item.name}>
+              <div>
+                <strong>{item.name}</strong>
+                <p>{item.note}</p>
+              </div>
+              <div className="dashboard-market-values">
+                <span>{item.level}</span>
+                <small className={item.change >= 0 ? 'positive' : 'negative'}>
+                  {item.change >= 0 ? '+' : ''}
+                  {item.change.toFixed(2)}%
+                </small>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="card span-3 dashboard-money-card">
-        <h3>Your Money</h3>
+        <h3>Account Overview</h3>
         <div className="money-group-grid">
           <article className="money-group money-group--trading">
             <div className="money-group-head">
@@ -1134,7 +1172,7 @@ function App() {
             </div>
             <p className="money-total">₱{tradingMarketValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
             <p className={tradingDailyPnL >= 0 ? 'positive' : 'negative'}>
-              Daily P&amp;L: {tradingDailyPnL >= 0 ? '+' : ''}₱{Math.abs(tradingDailyPnL).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              Today’s P&amp;L: {tradingDailyPnL >= 0 ? '+' : ''}₱{Math.abs(tradingDailyPnL).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </p>
             <ul className="money-preview-list">
               {tradingTopHoldings.map((holding) => (
@@ -1151,15 +1189,18 @@ function App() {
 
           <article className="money-group money-group--pera">
             <div className="money-group-head">
-              <h4>PERA</h4>
+              <h4>PERA (Aggregated)</h4>
               <button type="button" onClick={() => setShowPeraAccounts((value) => !value)}>
-                {showPeraAccounts ? 'Hide accounts' : 'Expand accounts'}
+                {showPeraAccounts ? 'Hide accounts' : 'Expand to view'}
               </button>
             </div>
             <p className="money-total">₱{totalPeraValueAllAccounts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
             <p>Total contributions: ₱{totalPeraContributions.toLocaleString()}</p>
+            <p>
+              Accounts active: {peraAccounts.length}/{MAX_PERA_ACCOUNTS}
+            </p>
             <div className="money-progress">
-              <span>Retirement goal progress · {peraGoalProgress}%</span>
+              <span>Progress toward goal · {peraGoalProgress}%</span>
               <div className="bar-track">
                 <span style={{ width: `${Math.min(100, peraGoalProgress)}%` }} />
               </div>
@@ -1182,8 +1223,8 @@ function App() {
           <article className="money-group money-group--managed">
             <div className="money-group-head">
               <h4>Managed Portfolios</h4>
-              <button type="button" onClick={() => setShowManagedPortfolios((value) => !value)}>
-                {showManagedPortfolios ? 'Hide portfolios' : 'Expand portfolios'}
+              <button type="button" className="primary" onClick={() => setShowManagedPortfolios((value) => !value)}>
+                View portfolios
               </button>
             </div>
             <p className="money-total">₱{managedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
@@ -1216,7 +1257,115 @@ function App() {
         </div>
       </section>
 
-      <section className="card dashboard-insights-card">
+      <section className="card dashboard-allocation-card">
+        <h3>Allocation Snapshot</h3>
+        <div
+          className="allocation-pie"
+          style={{
+            background: `conic-gradient(var(--accent) 0% ${equitiesExposure}%, #7c3aed ${equitiesExposure}% ${equitiesExposure + bondsExposure}%, #f59e0b ${equitiesExposure + bondsExposure}% 100%)`,
+          }}
+          aria-hidden
+        />
+        <div className="allocation-legend">
+          <div className="allocation-row">
+            <span>Stocks</span>
+            <strong>{equitiesExposure}%</strong>
+            <div className="bar-track">
+              <span style={{ width: `${equitiesExposure}%` }} />
+            </div>
+          </div>
+          <div className="allocation-row">
+            <span>Bonds</span>
+            <strong>{bondsExposure}%</strong>
+            <div className="bar-track">
+              <span style={{ width: `${bondsExposure}%`, background: '#7c3aed' }} />
+            </div>
+          </div>
+          <div className="allocation-row">
+            <span>Cash</span>
+            <strong>{cashExposure}%</strong>
+            <div className="bar-track">
+              <span style={{ width: `${cashExposure}%`, background: '#f59e0b' }} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card dashboard-activity-card">
+        <h3>Recent Activity</h3>
+        <ul className="list dashboard-activity-list">
+          {dashboardActivities.slice(0, 5).map((item) => (
+            <li key={item.id}>
+              <div>
+                <strong>{item.action}</strong>
+                <p>{item.account}</p>
+              </div>
+              <div className="dashboard-activity-values">
+                <small>{item.time}</small>
+                <span className={item.amount >= 0 ? 'positive' : 'negative'}>
+                  {item.amount >= 0 ? '+' : '-'}₱{Math.abs(item.amount).toLocaleString()}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section
+        className="card dashboard-sponsored-card"
+        onMouseEnter={() => setIsSponsoredPaused(true)}
+        onMouseLeave={resumeSponsoredCarousel}
+        onFocusCapture={() => setIsSponsoredPaused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            resumeSponsoredCarousel()
+          }
+        }}
+      >
+        <div className="dashboard-sponsored-top">
+          <h3>Ad Spotlight</h3>
+          <span>
+            {sponsoredIndex + 1} / {sponsoredContents.length}
+          </span>
+        </div>
+        <article
+          id="sponsored-slide-panel"
+          className="dashboard-sponsored-slide"
+          role="tabpanel"
+          aria-labelledby={`sponsored-dot-${sponsoredIndex}`}
+        >
+          <p>{activeSponsoredContent.sponsor}</p>
+          <strong>{activeSponsoredContent.title}</strong>
+          <small>{activeSponsoredContent.summary}</small>
+          <div className="dashboard-sponsored-meta">
+            <span>{activeSponsoredContent.badge}</span>
+            <small>{activeSponsoredContent.footnote}</small>
+          </div>
+          <button type="button" className="primary">
+            {activeSponsoredContent.cta}
+          </button>
+        </article>
+        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Navigate sponsored content slides">
+          {sponsoredContents.map((item, index) => (
+            <button
+              key={item.title}
+              id={`sponsored-dot-${index}`}
+              type="button"
+              role="tab"
+              aria-controls="sponsored-slide-panel"
+              aria-selected={sponsoredIndex === index}
+              tabIndex={sponsoredIndex === index ? 0 : -1}
+              className={sponsoredIndex === index ? 'active' : ''}
+              onClick={() => goToSponsoredIndex(index)}
+              onKeyDown={(event) => handleSponsoredTabKeyDown(event, index)}
+            >
+              <span className="sr-only">{item.title}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="card span-3 dashboard-insights-card">
         <h3>Insights</h3>
         <ul className="list dashboard-insights-list">
           <li>
