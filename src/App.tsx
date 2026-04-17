@@ -2018,7 +2018,7 @@ function App() {
           {paginatedLearningContents.map((item) => (
             <article
               key={item.id}
-              className="card learning-content-card"
+              className={`card learning-content-card learning-content-card--${item.type}`}
               role="button"
               tabIndex={0}
               onClick={() => setSelectedLearningContentId(item.id)}

@@ -1418,12 +1418,45 @@ label {
 }
 
 .learning-content-card {
+  --learning-card-accent: #4c7dff;
+  --learning-card-overlay-start: rgba(7, 18, 41, 0.2);
+  --learning-card-overlay-end: rgba(7, 18, 41, 0.95);
   position: relative;
   overflow: hidden;
   cursor: pointer;
   gap: 0;
   padding: 0;
   min-height: 280px;
+  border: 1px solid color-mix(in srgb, var(--learning-card-accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--learning-card-accent) 8%, #071024);
+  box-shadow: 0 16px 36px -28px color-mix(in srgb, var(--learning-card-accent) 42%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.learning-content-card:hover,
+.learning-content-card:focus-visible,
+.learning-content-card:focus-within {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--learning-card-accent) 64%, var(--border));
+  box-shadow: 0 24px 44px -28px color-mix(in srgb, var(--learning-card-accent) 48%, transparent);
+}
+
+.learning-content-card--video {
+  --learning-card-accent: #4f86ff;
+  --learning-card-overlay-start: rgba(7, 22, 53, 0.2);
+  --learning-card-overlay-end: rgba(7, 22, 53, 0.95);
+}
+
+.learning-content-card--module {
+  --learning-card-accent: #00b4c6;
+  --learning-card-overlay-start: rgba(3, 38, 45, 0.2);
+  --learning-card-overlay-end: rgba(3, 38, 45, 0.94);
+}
+
+.learning-content-card--game {
+  --learning-card-accent: #9a63ff;
+  --learning-card-overlay-start: rgba(33, 12, 69, 0.2);
+  --learning-card-overlay-end: rgba(33, 12, 69, 0.95);
 }
 
 .learning-content-image {
@@ -1434,10 +1467,17 @@ label {
   border-radius: inherit;
   object-fit: cover;
   border: 0;
+  transition: transform 0.25s ease;
+}
+
+.learning-content-card:hover .learning-content-image,
+.learning-content-card:focus-visible .learning-content-image,
+.learning-content-card:focus-within .learning-content-image {
+  transform: scale(1.04);
 }
 
 .learning-content-overlay {
-  --learning-overlay-text-color: #fff;
+  --learning-overlay-text-color: #f8fbff;
   --learning-overlay-muted-text: rgba(255, 255, 255, 0.92);
   position: absolute;
   inset: 0;
@@ -1448,20 +1488,10 @@ label {
   color: var(--learning-overlay-text-color);
   background: linear-gradient(
     180deg,
-    rgba(3, 12, 31, 0.18) 15%,
-    rgba(3, 12, 31, 0.84) 60%,
-    rgba(3, 12, 31, 0.96) 100%
+    var(--learning-card-overlay-start) 20%,
+    color-mix(in srgb, var(--learning-card-accent) 14%, var(--learning-card-overlay-end)) 60%,
+    var(--learning-card-overlay-end) 100%
   );
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.learning-content-card:hover .learning-content-overlay,
-.learning-content-card:focus-visible .learning-content-overlay,
-.learning-content-card:focus-within .learning-content-overlay {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .learning-content-overlay h4,
@@ -1474,9 +1504,9 @@ label {
 }
 
 .learning-content-overlay .learning-chip {
-  border-color: rgba(255, 255, 255, 0.48);
+  border-color: color-mix(in srgb, var(--learning-card-accent) 64%, rgba(255, 255, 255, 0.38));
   color: var(--learning-overlay-text-color);
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--learning-card-accent) 24%, rgba(255, 255, 255, 0.1));
 }
 
 .learning-content-overlay .allocation-row span {
