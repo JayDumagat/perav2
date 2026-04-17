@@ -2058,7 +2058,12 @@ function App() {
         </section>
 
         <section className="card span-3 learning-pagination">
-          <button type="button" onClick={() => setLearningPage((pageNumber) => Math.max(1, pageNumber - 1))} disabled={currentLearningPage === 1}>
+          <button
+            type="button"
+            onClick={() => setLearningPage((pageNumber) => Math.max(1, pageNumber - 1))}
+            disabled={currentLearningPage === 1}
+            aria-label="Go to previous page"
+          >
             Previous
           </button>
           <p>
@@ -2068,6 +2073,7 @@ function App() {
             type="button"
             onClick={() => setLearningPage((pageNumber) => Math.min(learningTotalPages, pageNumber + 1))}
             disabled={currentLearningPage === learningTotalPages}
+            aria-label="Go to next page"
           >
             Next
           </button>
@@ -2075,7 +2081,18 @@ function App() {
       </div>
 
       {selectedLearningContent && (
-        <div className="learning-modal-overlay" onClick={() => setSelectedLearningContentId(null)} role="presentation">
+        <div
+          className="learning-modal-overlay"
+          onClick={() => setSelectedLearningContentId(null)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setSelectedLearningContentId(null)
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close learning content details"
+        >
           <div className="card learning-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
             <img src={selectedLearningContent.image} alt={selectedLearningContent.title} className="learning-modal-image" />
             <div className="learning-content-meta">
@@ -2096,6 +2113,7 @@ function App() {
                 type="button"
                 className={learningFeedback[selectedLearningContent.id] === 'like' ? 'active' : ''}
                 onClick={() => setLearningReaction(selectedLearningContent.id, 'like')}
+                aria-label={`Like ${selectedLearningContent.title}`}
               >
                 👍 Like
               </button>
@@ -2103,10 +2121,11 @@ function App() {
                 type="button"
                 className={learningFeedback[selectedLearningContent.id] === 'dislike' ? 'active' : ''}
                 onClick={() => setLearningReaction(selectedLearningContent.id, 'dislike')}
+                aria-label={`Dislike ${selectedLearningContent.title}`}
               >
                 👎 Dislike
               </button>
-              <button type="button" onClick={() => setSelectedLearningContentId(null)}>
+              <button type="button" onClick={() => setSelectedLearningContentId(null)} aria-label="Close modal">
                 Close
               </button>
             </div>
