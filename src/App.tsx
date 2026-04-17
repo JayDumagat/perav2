@@ -119,6 +119,18 @@ const learningPaths = [
   { label: 'Advanced', progress: 19 },
 ]
 
+const morningNotes = [
+  { title: 'Good morning, Jordan', detail: 'US equities opened firmer with broad participation in mega-cap tech.', time: '6:45 AM' },
+  { title: 'Macro watch', detail: 'Treasury yields are stable ahead of inflation guidance this afternoon.', time: '7:10 AM' },
+  { title: 'Plan highlight', detail: 'Your PERA monthly contribution posts tomorrow. Current pace: 104% of target.', time: '7:28 AM' },
+]
+
+const marketBriefs = [
+  { label: 'S&P 500', value: '5,349.21', change: 0.74, symbol: 'FOREXCOM:SPXUSD' },
+  { label: 'NASDAQ 100', value: '18,775.40', change: 1.16, symbol: 'NASDAQ:NDX' },
+  { label: 'BTC / USD', value: '$72,418', change: -0.58, symbol: 'BITSTAMP:BTCUSD' },
+]
+
 // ── ICONS ────────────────────────────────────────────────────────────────────
 
 function SvgIcon({ children, size = 18 }: { children: React.ReactNode; size?: number }) {
@@ -360,8 +372,50 @@ function growthProjection(current: number, monthly: number, years: number, annua
   return value
 }
 
+function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    containerRef.current.innerHTML = ''
+    const widgetHost = document.createElement('div')
+    widgetHost.className = 'tradingview-widget-container__widget'
+    containerRef.current.appendChild(widgetHost)
+
+    const script = document.createElement('script')
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
+    script.type = 'text/javascript'
+    script.async = true
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol,
+      interval: '60',
+      timezone: 'Etc/UTC',
+      theme: theme === 'dark' ? 'dark' : 'light',
+      style: '1',
+      locale: 'en',
+      hide_top_toolbar: false,
+      allow_symbol_change: true,
+      save_image: false,
+      support_host: 'https://www.tradingview.com',
+    })
+    containerRef.current.appendChild(script)
+
+    return () => {
+      if (containerRef.current) containerRef.current.innerHTML = ''
+    }
+  }, [symbol, theme])
+
+  return (
+    <div className="tradingview-widget-container tv-chart">
+      <div className="tv-chart-host" ref={containerRef} />
+    </div>
+  )
+}
+
 function App() {
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = useState<Theme>('dark')
   const [authStep, setAuthStep] = useState<AuthStep>('login')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [authed, setAuthed] = useState(false)
@@ -378,6 +432,7 @@ function App() {
   const [annualReturn, setAnnualReturn] = useState(0.08)
   const [quizAnswer, setQuizAnswer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [dashboardSymbol, setDashboardSymbol] = useState(marketBriefs[0].symbol)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedStock = useMemo(
@@ -645,6 +700,71 @@ function App() {
       </section>
 
       <section className="card chart-card span-2">
+        <div className="heading-row">
+          <h3>Live Market Chart (TradingView)</h3>
+          <div className="segment slim">
+            {marketBriefs.map((item) => (
+              <button
+                key={item.symbol}
+                type="button"
+                className={dashboardSymbol === item.symbol ? 'active' : ''}
+                onClick={() => setDashboardSymbol(item.symbol)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <TradingViewWidget symbol={dashboardSymbol} theme={theme} />
+      </section>
+
+      <section className="card">
+        <h3>Morning Notes</h3>
+        <ul className="list snippet-list">
+          {morningNotes.map((note) => (
+            <li key={note.title}>
+              <div>
+                <strong>{note.title}</strong>
+                <p>{note.detail}</p>
+              </div>
+              <small>{note.time}</small>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="card">
+        <h3>Market Information</h3>
+        <div className="snippet-metrics">
+          {marketBriefs.map((item) => (
+            <article key={item.label} className="snippet-metric">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <p className={item.change >= 0 ? 'positive' : 'negative'}>
+                {item.change >= 0 ? '+' : ''}
+                {item.change.toFixed(2)}%
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="card snippet-spotlight span-2">
+        <div className="heading-row">
+          <h3>Sponsored Insight</h3>
+          <button type="button" className="snippet-chip">
+            Partner
+          </button>
+        </div>
+        <h4>Emerald Core ETF Bundle</h4>
+        <p>Curated income + growth basket for long-term investors looking for lower volatility and quarterly dividends.</p>
+        <div className="quick-actions">
+          <button type="button">View details</button>
+          <button type="button">Add to watchlist</button>
+        </div>
+      </section>
+
+      <section className="card">
         <div className="heading-row">
           <h3>Portfolio Performance</h3>
           <div className="segment slim">

@@ -749,7 +749,7 @@ button.active,
 
 /* ── CHART ──────────────────────────────────────────── */
 .chart-card {
-  min-height: 270px;
+  min-height: 340px;
 }
 
 .chart {
@@ -765,6 +765,20 @@ button.active,
   stroke: var(--accent);
   stroke-width: 2;
   fill: none;
+}
+
+.tv-chart {
+  width: 100%;
+  min-height: 300px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+}
+
+.tv-chart-host {
+  width: 100%;
+  height: 300px;
 }
 
 /* ── TABLE ──────────────────────────────────────────── */
@@ -828,6 +842,61 @@ th:last-child {
 
 .list li:hover {
   background: var(--border);
+}
+
+.snippet-list li {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.snippet-list small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.snippet-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.snippet-metric {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.snippet-metric span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.snippet-metric strong {
+  color: var(--text-strong);
+}
+
+.snippet-metric p {
+  font-size: 13px;
+}
+
+.snippet-spotlight {
+  background: linear-gradient(135deg, var(--panel), var(--panel-strong));
+}
+
+.snippet-chip {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* ── STOCK LIST ─────────────────────────────────────── */
