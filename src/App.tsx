@@ -21,6 +21,7 @@ type DashboardActivity = {
   account: string
   time: string
   amount: number
+  direction: 'in' | 'out'
 }
 
 function parseTheme(value: string | null): Theme | null {
@@ -278,11 +279,11 @@ const sponsoredContents: SponsoredContent[] = [
 ]
 
 const dashboardActivities: DashboardActivity[] = [
-  { id: 'a1', action: 'Bought TSLA', account: 'Trading', time: '09:42 AM', amount: -12350 },
-  { id: 'a2', action: 'PERA contribution', account: 'PERA Core Retirement', time: '08:15 AM', amount: 800 },
-  { id: 'a3', action: 'Added to Growth Leaders', account: 'Managed Portfolio', time: 'Yesterday', amount: -5000 },
-  { id: 'a4', action: 'Sold NVDA partial', account: 'Trading', time: 'Yesterday', amount: 7420 },
-  { id: 'a5', action: 'Dividend credited', account: 'Managed Income', time: '2 days ago', amount: 1340 },
+  { id: 'a1', action: 'Bought TSLA', account: 'Trading', time: '09:42 AM', amount: 12350, direction: 'out' },
+  { id: 'a2', action: 'PERA contribution', account: 'PERA Core Retirement', time: '08:15 AM', amount: 800, direction: 'out' },
+  { id: 'a3', action: 'Added to Growth Leaders', account: 'Managed Portfolios', time: 'Yesterday', amount: 5000, direction: 'out' },
+  { id: 'a4', action: 'Sold NVDA partial', account: 'Trading', time: 'Yesterday', amount: 7420, direction: 'in' },
+  { id: 'a5', action: 'Dividend credited', account: 'Managed Income', time: '2 days ago', amount: 1340, direction: 'in' },
 ]
 
 const marketWatch = [
@@ -318,9 +319,14 @@ const retirementGoal = 1200000 // PHP target
 // Synthetic daily return assumptions used for intraday estimate when live account-level delta feeds are unavailable.
 const PERA_DAILY_RETURN_RATE = 0.0024 // ~0.24% daily estimate
 const MANAGED_DAILY_RETURN_RATE = 0.0018 // ~0.18% daily estimate
+const PROJECTION_EXTRA_MONTHLY_CONTRIBUTION = 4200
 // Estimated equity exposure assumptions used for high-level risk insight.
 const MANAGED_EQUITY_ALLOCATION = 0.58
 const PERA_EQUITY_ALLOCATION = 0.46
+const TRADING_EQUITY_ALLOCATION = 0.86
+const TRADING_BOND_ALLOCATION = 0.04
+const MANAGED_BOND_ALLOCATION = 0.28
+const PERA_BOND_ALLOCATION = 0.34
 
 // ── ICONS ────────────────────────────────────────────────────────────────────
 
@@ -986,7 +992,10 @@ function App() {
   const todayChangePct = safePercentage(todayChangeAmount, todayBase)
   const peraGoalProgress = safePercentage(totalPeraValueAllAccounts, retirementGoal)
   const retirementGap = Math.max(0, retirementGoal - totalPeraValueAllAccounts)
-  const projectedNetWorth = useMemo(() => growthProjection(totalNetWorth, monthlyContribution + 4200, 10, annualReturn), [annualReturn, monthlyContribution, totalNetWorth])
+  const projectedNetWorth = useMemo(
+    () => growthProjection(totalNetWorth, monthlyContribution + PROJECTION_EXTRA_MONTHLY_CONTRIBUTION, 10, annualReturn),
+    [annualReturn, monthlyContribution, totalNetWorth],
+  )
   const marketBreadth = useMemo(() => safePercentage(watchlist.filter((stock) => stock.change >= 0).length, watchlist.length), [watchlist])
 
   const accountSeriesByFilter = useMemo(() => {
@@ -1010,8 +1019,12 @@ function App() {
   }, [managedTotalValue, totalPeraValueAllAccounts, tradingMarketValue])
 
   const currentDashboardSeries = accountSeriesByFilter[dashboardFilter][dashboardRange]
-  const stocksAmount = tradingMarketValue * 0.86 + managedTotalValue * MANAGED_EQUITY_ALLOCATION + totalPeraValueAllAccounts * PERA_EQUITY_ALLOCATION
-  const bondsAmount = tradingMarketValue * 0.04 + managedTotalValue * 0.28 + totalPeraValueAllAccounts * 0.34
+  const stocksAmount =
+    tradingMarketValue * TRADING_EQUITY_ALLOCATION +
+    managedTotalValue * MANAGED_EQUITY_ALLOCATION +
+    totalPeraValueAllAccounts * PERA_EQUITY_ALLOCATION
+  const bondsAmount =
+    tradingMarketValue * TRADING_BOND_ALLOCATION + managedTotalValue * MANAGED_BOND_ALLOCATION + totalPeraValueAllAccounts * PERA_BOND_ALLOCATION
   const equitiesExposure = safePercentage(stocksAmount, totalNetWorth)
   const bondsExposure = safePercentage(bondsAmount, totalNetWorth)
   const cashExposure = Math.max(0, 100 - equitiesExposure - bondsExposure)
@@ -1224,7 +1237,7 @@ function App() {
             <div className="money-group-head">
               <h4>Managed Portfolios</h4>
               <button type="button" className="primary" onClick={() => setShowManagedPortfolios((value) => !value)}>
-                View portfolios
+                {showManagedPortfolios ? 'Hide portfolios' : 'View portfolios'}
               </button>
             </div>
             <p className="money-total">₱{managedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
@@ -1302,8 +1315,8 @@ function App() {
               </div>
               <div className="dashboard-activity-values">
                 <small>{item.time}</small>
-                <span className={item.amount >= 0 ? 'positive' : 'negative'}>
-                  {item.amount >= 0 ? '+' : '-'}₱{Math.abs(item.amount).toLocaleString()}
+                <span className={item.direction === 'in' ? 'positive' : 'negative'}>
+                  {item.direction === 'in' ? '+' : '-'}₱{item.amount.toLocaleString()}
                 </span>
               </div>
             </li>
