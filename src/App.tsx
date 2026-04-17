@@ -404,6 +404,12 @@ function TradingViewWidget({ symbol, theme }: { symbol: string; theme: Theme }) 
     container.appendChild(script)
 
     return () => {
+      if (container.contains(script)) {
+        script.remove()
+      }
+      if (container.contains(widgetHost)) {
+        widgetHost.remove()
+      }
       container.innerHTML = ''
     }
   }, [symbol, theme])
