@@ -1038,6 +1038,9 @@ function App() {
   const equitiesExposure = safePercentage(stocksAmount, totalNetWorth)
   const bondsExposure = safePercentage(bondsAmount, totalNetWorth)
   const cashExposure = Math.max(0, 100 - equitiesExposure - bondsExposure)
+  const stocksExposureEnd = equitiesExposure
+  const bondsExposureEnd = equitiesExposure + bondsExposure
+  const peraAccountsCount = peraAccounts.length
   const equitiesExposurePct = equitiesExposure
   const timeOfDay = useMemo(() => {
     const hour = new Date().getHours()
@@ -1095,7 +1098,7 @@ function App() {
             </p>
           </article>
           <article>
-            <span>Projected Value (10Y)</span>
+            <span>Projected Value ({PROJECTION_YEARS_HORIZON}Y)</span>
             <p>₱{projectedNetWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             <small>Based on current net worth + recurring contributions.</small>
           </article>
@@ -1220,7 +1223,7 @@ function App() {
             <p className="money-total">₱{totalPeraValueAllAccounts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
             <p>Total contributions: ₱{totalPeraContributions.toLocaleString()}</p>
             <p>
-              Accounts active: {peraAccounts.length}/{MAX_PERA_ACCOUNTS}
+              Accounts active: {peraAccountsCount}/{MAX_PERA_ACCOUNTS}
             </p>
             <div className="money-progress">
               <span>Progress toward goal · {peraGoalProgress}%</span>
@@ -1285,7 +1288,7 @@ function App() {
         <div
           className="allocation-pie"
           style={{
-            background: `conic-gradient(var(--accent) 0% ${equitiesExposure}%, var(--allocation-bonds-color) ${equitiesExposure}% ${equitiesExposure + bondsExposure}%, var(--allocation-cash-color) ${equitiesExposure + bondsExposure}% 100%)`,
+            background: `conic-gradient(var(--accent) 0% ${stocksExposureEnd}%, var(--allocation-bonds-color) ${stocksExposureEnd}% ${bondsExposureEnd}%, var(--allocation-cash-color) ${bondsExposureEnd}% 100%)`,
           }}
           aria-hidden
         />

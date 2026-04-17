@@ -693,12 +693,12 @@ button.active,
   --fintech-card-glow-y: 18px;
   --fintech-card-glow-blur: 32px;
   --fintech-card-glow-spread: -26px;
-  --fintech-card-glow-mix: 42%;
+  --fintech-card-glow-accent-mix: 42%;
   border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   background: linear-gradient(165deg, var(--panel), color-mix(in srgb, var(--panel-strong) 70%, var(--panel)));
   box-shadow:
     0 var(--fintech-card-glow-y) var(--fintech-card-glow-blur) var(--fintech-card-glow-spread)
-    color-mix(in srgb, var(--accent) var(--fintech-card-glow-mix), transparent);
+    color-mix(in srgb, var(--accent) var(--fintech-card-glow-accent-mix), transparent);
 }
 
 .dashboard-summary-card {
