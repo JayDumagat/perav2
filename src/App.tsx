@@ -116,17 +116,119 @@ const bundles = [
   { name: 'ESG Future', holdings: 'ENPH, TSLA, NEE, VWS', risk: 'Medium' },
 ]
 
-const articles = [
-  { title: 'Understanding Risk and Return', level: 'Beginner', minutes: 8 },
-  { title: 'How Portfolio Rebalancing Works', level: 'Intermediate', minutes: 10 },
-  { title: 'Tax-Efficient PERA Strategies', level: 'Advanced', minutes: 12 },
+type LearningContentType = 'video' | 'module' | 'game'
+
+type LearningContent = {
+  id: string
+  type: LearningContentType
+  title: string
+  description: string
+  topic: string
+  image: string
+  progress: number
+  duration: string
+}
+
+const learningContents: LearningContent[] = [
+  {
+    id: 'video-risk-basics',
+    type: 'video',
+    title: 'Risk Basics in 6 Minutes',
+    description: 'A quick explainer on volatility, drawdowns, and realistic return expectations.',
+    topic: 'Risk Management',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
+    progress: 64,
+    duration: '6 min',
+  },
+  {
+    id: 'video-diversification',
+    type: 'video',
+    title: 'Diversification for Beginners',
+    description: 'Learn how to spread exposure across sectors and asset classes.',
+    topic: 'Portfolio Basics',
+    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+    progress: 31,
+    duration: '9 min',
+  },
+  {
+    id: 'module-portfolio-construction',
+    type: 'module',
+    title: 'Build Your Starter Portfolio',
+    description: 'Step-by-step module to create a balanced beginner allocation.',
+    topic: 'Portfolio Basics',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+    progress: 52,
+    duration: '4 lessons',
+  },
+  {
+    id: 'module-retirement-planning',
+    type: 'module',
+    title: 'Retirement Planning Fundamentals',
+    description: 'Understand contribution habits, compounding, and timeline planning.',
+    topic: 'Retirement',
+    image: 'https://images.unsplash.com/photo-1534951009808-766178b47a4f?auto=format&fit=crop&w=1200&q=80',
+    progress: 18,
+    duration: '5 lessons',
+  },
+  {
+    id: 'game-allocation-challenge',
+    type: 'game',
+    title: 'Allocation Challenge',
+    description: 'Rebalance a portfolio under changing market conditions and score your strategy.',
+    topic: 'Risk Management',
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    progress: 73,
+    duration: '12 min',
+  },
+  {
+    id: 'game-market-cycle',
+    type: 'game',
+    title: 'Market Cycle Simulator',
+    description: 'Test decisions across bull, bear, and sideways market cycles.',
+    topic: 'Market Behavior',
+    image: 'https://images.unsplash.com/photo-1624996379697-f01d168b1a52?auto=format&fit=crop&w=1200&q=80',
+    progress: 44,
+    duration: '10 min',
+  },
+  {
+    id: 'video-goal-based-investing',
+    type: 'video',
+    title: 'Goal-Based Investing',
+    description: 'Connect financial goals to time horizons and suitable investment choices.',
+    topic: 'Planning',
+    image: 'https://images.unsplash.com/photo-1460472178825-e5240623afd5?auto=format&fit=crop&w=1200&q=80',
+    progress: 27,
+    duration: '8 min',
+  },
+  {
+    id: 'module-tax-aware',
+    type: 'module',
+    title: 'Tax-Aware Investing',
+    description: 'Discover practical ways to improve after-tax outcomes in your long-term plan.',
+    topic: 'Retirement',
+    image: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80',
+    progress: 39,
+    duration: '3 lessons',
+  },
+  {
+    id: 'game-budget-quest',
+    type: 'game',
+    title: 'Budget Quest',
+    description: 'Complete weekly budgeting scenarios to unlock savings boosts for investing.',
+    topic: 'Planning',
+    image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
+    progress: 83,
+    duration: '15 min',
+  },
 ]
 
-const learningPaths = [
-  { label: 'Beginner', progress: 78 },
-  { label: 'Intermediate', progress: 42 },
-  { label: 'Advanced', progress: 19 },
-]
+const LEARNING_PAGE_SIZE = 6
+
+const learningTypeLabel: Record<LearningContentType, string> = {
+  video: 'Video',
+  module: 'Module',
+  game: 'Game',
+}
 
 // ── PERA DATA ─────────────────────────────────────────────────────────────────
 
@@ -615,6 +717,12 @@ function App() {
   const [page, setPage] = useState<MainPage>('dashboard')
   const [watchlist, setWatchlist] = useState(initialStocks)
   const [search, setSearch] = useState('')
+  const [learningSearch, setLearningSearch] = useState('')
+  const [learningTypeFilter, setLearningTypeFilter] = useState<'all' | LearningContentType>('all')
+  const [learningTopicFilter, setLearningTopicFilter] = useState('All topics')
+  const [learningPage, setLearningPage] = useState(1)
+  const [learningFeedback, setLearningFeedback] = useState<Record<string, 'like' | 'dislike' | null>>({})
+  const [selectedLearningContentId, setSelectedLearningContentId] = useState<string | null>(null)
   const [selected, setSelected] = useState(defaultSelectedSymbol)
   const tradingRange: Range = '1D'
   const [orderType, setOrderType] = useState<'Market' | 'Limit'>('Market')
@@ -623,7 +731,6 @@ function App() {
   const [limitPrice, setLimitPrice] = useState(defaultSelectedStock.price)
   const [monthlyContribution, setMonthlyContribution] = useState(900)
   const [annualReturn, setAnnualReturn] = useState(0.08)
-  const [quizAnswer, setQuizAnswer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [dashboardRange, setDashboardRange] = useState<DashboardRange>('1Y')
   const [dashboardFilter, setDashboardFilter] = useState<DashboardAccountFilter>('All')
@@ -651,6 +758,30 @@ function App() {
   const watchlistBySymbol = useMemo<Record<string, Stock>>(
     () => watchlist.reduce<Record<string, Stock>>((acc, stock) => ({ ...acc, [stock.symbol]: stock }), {}),
     [watchlist],
+  )
+  const learningTopics = useMemo(() => ['All topics', ...new Set(learningContents.map((item) => item.topic))], [])
+  const filteredLearningContents = useMemo(
+    () =>
+      learningContents.filter((item) => {
+        const matchesSearch = `${item.title} ${item.description} ${item.topic}`.toLowerCase().includes(learningSearch.toLowerCase())
+        const matchesType = learningTypeFilter === 'all' || item.type === learningTypeFilter
+        const matchesTopic = learningTopicFilter === 'All topics' || item.topic === learningTopicFilter
+        return matchesSearch && matchesType && matchesTopic
+      }),
+    [learningSearch, learningTopicFilter, learningTypeFilter],
+  )
+  const learningTotalPages = useMemo(
+    () => Math.max(1, Math.ceil(filteredLearningContents.length / LEARNING_PAGE_SIZE)),
+    [filteredLearningContents.length],
+  )
+  const currentLearningPage = Math.min(learningPage, learningTotalPages)
+  const paginatedLearningContents = useMemo(
+    () => filteredLearningContents.slice((currentLearningPage - 1) * LEARNING_PAGE_SIZE, currentLearningPage * LEARNING_PAGE_SIZE),
+    [currentLearningPage, filteredLearningContents],
+  )
+  const selectedLearningContent = useMemo(
+    () => learningContents.find((item) => item.id === selectedLearningContentId) ?? null,
+    [selectedLearningContentId],
   )
 
   const estimatedOrderCost = useMemo(() => {
@@ -713,6 +844,13 @@ function App() {
         },
       ]
     })
+  }
+
+  function setLearningReaction(itemId: string, reaction: 'like' | 'dislike') {
+    setLearningFeedback((previous) => ({
+      ...previous,
+      [itemId]: previous[itemId] === reaction ? null : reaction,
+    }))
   }
 
   useEffect(() => {
@@ -1804,62 +1942,178 @@ function App() {
   )
 
   const learningView = (
-    <div className="grid learning-grid">
-      <section className="card span-2">
-        <h3>Learning Paths</h3>
-        {learningPaths.map((path) => (
-          <div key={path.label} className="allocation-row">
-            <span>{path.label}</span>
-            <span>{path.progress}%</span>
-            <div className="bar-track">
-              <span style={{ width: `${path.progress}%` }} />
-            </div>
+    <>
+      <div className="grid learning-grid">
+        <section className="card span-3 learning-hub-toolbar">
+          <div>
+            <h3>Learning Hub</h3>
+            <p>Explore videos, modules, and games tailored to your investing journey.</p>
           </div>
-        ))}
-      </section>
+          <div className="learning-hub-controls">
+            <input
+              value={learningSearch}
+              onChange={(event) => {
+                setLearningSearch(event.target.value)
+                setLearningPage(1)
+              }}
+              placeholder="Search content"
+              aria-label="Search learning content"
+            />
+            <div className="segment learning-type-filter">
+              {(['all', 'video', 'module', 'game'] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={learningTypeFilter === type ? 'active' : ''}
+                  onClick={() => {
+                    setLearningTypeFilter(type)
+                    setLearningPage(1)
+                  }}
+                >
+                  {type === 'all' ? 'All' : learningTypeLabel[type]}
+                </button>
+              ))}
+            </div>
+            <select
+              value={learningTopicFilter}
+              onChange={(event) => {
+                setLearningTopicFilter(event.target.value)
+                setLearningPage(1)
+              }}
+              aria-label="Filter by topic"
+            >
+              {learningTopics.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
 
-      <section className="card">
-        <h3>Quick Quiz</h3>
-        <p>Why is diversification important?</p>
-        <div className="radio-group">
-          {[
-            'It reduces concentration risk',
-            'It guarantees higher returns',
-            'It removes market volatility',
-          ].map((item) => (
-            <label key={item}>
-              <input
-                type="radio"
-                name="quiz"
-                value={item}
-                checked={quizAnswer === item}
-                onChange={(event) => setQuizAnswer(event.target.value)}
-              />
-              {item}
-            </label>
-          ))}
-        </div>
-        {quizAnswer && (
-          <p className={quizAnswer.startsWith('It reduces') ? 'positive' : 'negative'}>
-            {quizAnswer.startsWith('It reduces') ? 'Correct: diversification helps balance portfolio risk.' : 'Try again: focus on risk control.'}
-          </p>
-        )}
-      </section>
-
-      <section className="card span-3">
-        <h3>Articles & Guides</h3>
-        <div className="bundle-grid">
-          {articles.map((article) => (
-            <article key={article.title} className="bundle">
-              <h4>{article.title}</h4>
-              <p>{article.level}</p>
-              <p>{article.minutes} min read</p>
-              <button type="button">Open guide</button>
+        <section className="span-3 learning-content-grid">
+          {paginatedLearningContents.length === 0 && (
+            <article className="card learning-empty-state">
+              <h4>No matching content</h4>
+              <p>Try changing your search term or filters.</p>
+            </article>
+          )}
+          {paginatedLearningContents.map((item) => (
+            <article
+              key={item.id}
+              className="card learning-content-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelectedLearningContentId(item.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setSelectedLearningContentId(item.id)
+                }
+              }}
+            >
+              <img src={item.image} alt={item.title} className="learning-content-image" />
+              <div className="learning-content-meta">
+                <span className="learning-chip">{learningTypeLabel[item.type]}</span>
+                <span>{item.topic}</span>
+              </div>
+              <h4>{item.title}</h4>
+              <p>{item.description}</p>
+              <div className="allocation-row learning-progress-row">
+                <span>Progress</span>
+                <span>{item.progress}%</span>
+                <div className="bar-track">
+                  <span style={{ width: `${item.progress}%` }} />
+                </div>
+              </div>
+              <div className="learning-content-footer">
+                <small>{item.duration}</small>
+                <div className="learning-reaction-group">
+                  <button
+                    type="button"
+                    className={learningFeedback[item.id] === 'like' ? 'active' : ''}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setLearningReaction(item.id, 'like')
+                    }}
+                    aria-label={`Like ${item.title}`}
+                  >
+                    👍
+                  </button>
+                  <button
+                    type="button"
+                    className={learningFeedback[item.id] === 'dislike' ? 'active' : ''}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setLearningReaction(item.id, 'dislike')
+                    }}
+                    aria-label={`Dislike ${item.title}`}
+                  >
+                    👎
+                  </button>
+                </div>
+              </div>
             </article>
           ))}
+        </section>
+
+        <section className="card span-3 learning-pagination">
+          <button type="button" onClick={() => setLearningPage((pageNumber) => Math.max(1, pageNumber - 1))} disabled={currentLearningPage === 1}>
+            Previous
+          </button>
+          <p>
+            Page {currentLearningPage} of {learningTotalPages}
+          </p>
+          <button
+            type="button"
+            onClick={() => setLearningPage((pageNumber) => Math.min(learningTotalPages, pageNumber + 1))}
+            disabled={currentLearningPage === learningTotalPages}
+          >
+            Next
+          </button>
+        </section>
+      </div>
+
+      {selectedLearningContent && (
+        <div className="learning-modal-overlay" onClick={() => setSelectedLearningContentId(null)} role="presentation">
+          <div className="card learning-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+            <img src={selectedLearningContent.image} alt={selectedLearningContent.title} className="learning-modal-image" />
+            <div className="learning-content-meta">
+              <span className="learning-chip">{learningTypeLabel[selectedLearningContent.type]}</span>
+              <span>{selectedLearningContent.topic}</span>
+            </div>
+            <h3>{selectedLearningContent.title}</h3>
+            <p>{selectedLearningContent.description}</p>
+            <div className="allocation-row learning-progress-row">
+              <span>Progress</span>
+              <span>{selectedLearningContent.progress}%</span>
+              <div className="bar-track">
+                <span style={{ width: `${selectedLearningContent.progress}%` }} />
+              </div>
+            </div>
+            <div className="learning-modal-actions">
+              <button
+                type="button"
+                className={learningFeedback[selectedLearningContent.id] === 'like' ? 'active' : ''}
+                onClick={() => setLearningReaction(selectedLearningContent.id, 'like')}
+              >
+                👍 Like
+              </button>
+              <button
+                type="button"
+                className={learningFeedback[selectedLearningContent.id] === 'dislike' ? 'active' : ''}
+                onClick={() => setLearningReaction(selectedLearningContent.id, 'dislike')}
+              >
+                👎 Dislike
+              </button>
+              <button type="button" onClick={() => setSelectedLearningContentId(null)}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-      </section>
-    </div>
+      )}
+    </>
   )
 
   if (!authed) {
