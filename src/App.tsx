@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import './App.css'
 
 type Theme = 'light' | 'dark'
@@ -12,6 +12,11 @@ type SponsoredContent = {
   sponsor: string
   summary: string
   cta: string
+}
+
+function parseTheme(value: string | null): Theme | null {
+  if (value === 'dark' || value === 'light') return value
+  return null
 }
 
 type Stock = {
@@ -276,6 +281,8 @@ const dashboardSeriesWeights: Record<DashboardRange, number[]> = {
   '1Y': [0.76, 0.79, 0.81, 0.83, 0.86, 0.88, 0.9, 0.93, 0.95, 0.98, 1, 1.03],
   All: [0.58, 0.62, 0.66, 0.7, 0.74, 0.79, 0.84, 0.88, 0.91, 0.94, 0.97, 1],
 }
+const SPONSORED_CAROUSEL_TICK_MS = 250
+const SPONSORED_CAROUSEL_ADVANCE_MS = 5000
 
 const retirementGoal = 1200000 // PHP target
 // Synthetic daily return assumptions used for intraday estimate when live account-level delta feeds are unavailable.
@@ -558,8 +565,8 @@ function safePercentage(numerator: number, denominator: number) {
 function App() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light'
-    const storedTheme = window.localStorage.getItem('theme')
-    if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme
+    const storedTheme = parseTheme(window.localStorage.getItem('theme'))
+    if (storedTheme) return storedTheme
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
   const [authStep, setAuthStep] = useState<AuthStep>('login')
@@ -581,6 +588,7 @@ function App() {
   const [dashboardRange, setDashboardRange] = useState<DashboardRange>('1Y')
   const [dashboardFilter, setDashboardFilter] = useState<DashboardAccountFilter>('All')
   const [sponsoredIndex, setSponsoredIndex] = useState(0)
+  const [isSponsoredPaused, setIsSponsoredPaused] = useState(false)
   const [showPeraAccounts, setShowPeraAccounts] = useState(false)
   const [showManagedPortfolios, setShowManagedPortfolios] = useState(false)
   const [peraAccounts, setPeraAccounts] = useState(initialPeraAccounts)
@@ -588,6 +596,8 @@ function App() {
   const [peraHoldingsByAccount, setPeraHoldingsByAccount] = useState(initialPeraHoldingsByAccount)
   const [peraContribByAccount, setPeraContribByAccount] = useState(initialPeraContribByAccount)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const isSponsoredPausedRef = useRef(false)
+  const sponsoredElapsedRef = useRef(0)
 
   const selectedStock = useMemo(
     () => watchlist.find((stock) => stock.symbol === selected) ?? watchlist[0],
@@ -687,9 +697,17 @@ function App() {
   }, [theme])
 
   useEffect(() => {
+    isSponsoredPausedRef.current = isSponsoredPaused
+  }, [isSponsoredPaused])
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
+      if (isSponsoredPausedRef.current) return
+      sponsoredElapsedRef.current += SPONSORED_CAROUSEL_TICK_MS
+      if (sponsoredElapsedRef.current < SPONSORED_CAROUSEL_ADVANCE_MS) return
+      sponsoredElapsedRef.current = 0
       setSponsoredIndex((previous) => (previous + 1) % sponsoredContents.length)
-    }, 5000)
+    }, SPONSORED_CAROUSEL_TICK_MS)
 
     return () => window.clearInterval(timer)
   }, [])
@@ -967,6 +985,27 @@ function App() {
   )
   const equitiesExposurePct = equitiesExposure
   const activeSponsoredContent = sponsoredContents[sponsoredIndex]
+  function resumeSponsoredCarousel() {
+    sponsoredElapsedRef.current = 0
+    setIsSponsoredPaused(false)
+  }
+  function goToSponsoredIndex(index: number) {
+    sponsoredElapsedRef.current = 0
+    setSponsoredIndex(index)
+  }
+  function handleSponsoredTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex = index
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % sponsoredContents.length
+    if (event.key === 'ArrowLeft') nextIndex = (index - 1 + sponsoredContents.length) % sponsoredContents.length
+    if (event.key === 'Home') nextIndex = 0
+    if (event.key === 'End') nextIndex = sponsoredContents.length - 1
+    if (nextIndex === index) return
+    event.preventDefault()
+    goToSponsoredIndex(nextIndex)
+    window.requestAnimationFrame(() => {
+      document.getElementById(`sponsored-dot-${nextIndex}`)?.focus()
+    })
+  }
 
   const dashboardView = (
     <div className="grid dashboard-unified">
@@ -1001,14 +1040,29 @@ function App() {
         </div>
       </section>
 
-      <section className="card dashboard-sponsored-card">
+      <section
+        className="card dashboard-sponsored-card"
+        onMouseEnter={() => setIsSponsoredPaused(true)}
+        onMouseLeave={resumeSponsoredCarousel}
+        onFocusCapture={() => setIsSponsoredPaused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            resumeSponsoredCarousel()
+          }
+        }}
+      >
         <div className="dashboard-sponsored-top">
           <h3>Sponsored</h3>
           <span>
             {sponsoredIndex + 1} / {sponsoredContents.length}
           </span>
         </div>
-        <article className="dashboard-sponsored-slide">
+        <article
+          id="sponsored-slide-panel"
+          className="dashboard-sponsored-slide"
+          role="tabpanel"
+          aria-labelledby={`sponsored-dot-${sponsoredIndex}`}
+        >
           <p>{activeSponsoredContent.sponsor}</p>
           <strong>{activeSponsoredContent.title}</strong>
           <small>{activeSponsoredContent.summary}</small>
@@ -1016,15 +1070,19 @@ function App() {
             {activeSponsoredContent.cta}
           </button>
         </article>
-        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Sponsored content slides">
+        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Navigate sponsored content slides">
           {sponsoredContents.map((item, index) => (
             <button
               key={item.title}
+              id={`sponsored-dot-${index}`}
               type="button"
               role="tab"
+              aria-controls="sponsored-slide-panel"
               aria-selected={sponsoredIndex === index}
+              tabIndex={sponsoredIndex === index ? 0 : -1}
               className={sponsoredIndex === index ? 'active' : ''}
-              onClick={() => setSponsoredIndex(index)}
+              onClick={() => goToSponsoredIndex(index)}
+              onKeyDown={(event) => handleSponsoredTabKeyDown(event, index)}
             >
               <span className="sr-only">{item.title}</span>
             </button>
