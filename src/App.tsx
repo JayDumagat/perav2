@@ -320,6 +320,10 @@ const retirementGoal = 1200000 // PHP target
 const PERA_DAILY_RETURN_RATE = 0.0024 // ~0.24% daily estimate
 const MANAGED_DAILY_RETURN_RATE = 0.0018 // ~0.18% daily estimate
 const PROJECTION_EXTRA_MONTHLY_CONTRIBUTION = 4200
+const PROJECTION_YEARS_HORIZON = 10
+const AFTERNOON_HOUR_START = 12
+const EVENING_HOUR_START = 18
+const MAX_RECENT_ACTIVITIES_DISPLAY = 5
 // Estimated equity exposure assumptions used for high-level risk insight.
 const MANAGED_EQUITY_ALLOCATION = 0.58
 const PERA_EQUITY_ALLOCATION = 0.46
@@ -993,7 +997,13 @@ function App() {
   const peraGoalProgress = safePercentage(totalPeraValueAllAccounts, retirementGoal)
   const retirementGap = Math.max(0, retirementGoal - totalPeraValueAllAccounts)
   const projectedNetWorth = useMemo(
-    () => growthProjection(totalNetWorth, monthlyContribution + PROJECTION_EXTRA_MONTHLY_CONTRIBUTION, 10, annualReturn),
+    () =>
+      growthProjection(
+        totalNetWorth,
+        monthlyContribution + PROJECTION_EXTRA_MONTHLY_CONTRIBUTION,
+        PROJECTION_YEARS_HORIZON,
+        annualReturn,
+      ),
     [annualReturn, monthlyContribution, totalNetWorth],
   )
   const marketBreadth = useMemo(() => safePercentage(watchlist.filter((stock) => stock.change >= 0).length, watchlist.length), [watchlist])
@@ -1031,8 +1041,8 @@ function App() {
   const equitiesExposurePct = equitiesExposure
   const dayPeriod = useMemo(() => {
     const hour = new Date().getHours()
-    if (hour < 12) return 'morning'
-    if (hour < 18) return 'afternoon'
+    if (hour < AFTERNOON_HOUR_START) return 'morning'
+    if (hour < EVENING_HOUR_START) return 'afternoon'
     return 'evening'
   }, [])
   const activeSponsoredContent = sponsoredContents[sponsoredIndex]
@@ -1307,7 +1317,7 @@ function App() {
       <section className="card dashboard-activity-card">
         <h3>Recent Activity</h3>
         <ul className="list dashboard-activity-list">
-          {dashboardActivities.slice(0, 5).map((item) => (
+          {dashboardActivities.slice(0, MAX_RECENT_ACTIVITIES_DISPLAY).map((item) => (
             <li key={item.id}>
               <div>
                 <strong>{item.action}</strong>
