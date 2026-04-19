@@ -1481,7 +1481,11 @@ function App() {
               <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
               <XAxis dataKey="point" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value).toLocaleString()}`} width={84} />
-              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+              <Tooltip
+                formatter={(value) =>
+                  `₱${Number(Array.isArray(value) ? value[0] : value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                }
+              />
               <Area type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} fill="url(#dashboardAreaFill)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -2029,7 +2033,7 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value)}`} width={74} />
-              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString()}`} />
+              <Tooltip formatter={(value) => `₱${Number(Array.isArray(value) ? value[0] : value ?? 0).toLocaleString()}`} />
               <Bar dataKey="target" fill="color-mix(in srgb, var(--border) 86%, var(--panel))" radius={[4, 4, 0, 0]} />
               <Bar dataKey="amount" fill="var(--accent)" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -2069,7 +2073,11 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value / 1000)}k`} width={74} />
-              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+              <Tooltip
+                formatter={(value) =>
+                  `₱${Number(Array.isArray(value) ? value[0] : value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                }
+              />
               <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -2236,7 +2244,7 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} />
               <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value / 1000)}k`} width={74} />
-              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString()}`} />
+              <Tooltip formatter={(value) => `₱${Number(Array.isArray(value) ? value[0] : value ?? 0).toLocaleString()}`} />
               <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
