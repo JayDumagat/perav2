@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import './App.css'
 
 type Theme = 'light' | 'dark'
 type AuthStep = 'login' | 'register'
-type MainPage = 'dashboard' | 'trading' | 'pera' | 'learning'
+type MainPage = 'dashboard' | 'trading' | 'pera' | 'products' | 'contributions' | 'learning'
 type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
 type DashboardRange = '1M' | '6M' | '1Y' | 'All'
 type DashboardAccountFilter = 'All' | 'Trading' | 'PERA'
@@ -37,83 +38,105 @@ type Stock = {
   pe: number
   volume: string
   marketCap: string
+  tradingViewSymbol: string
   series: Record<Range, number[]>
 }
 
 const initialStocks: Stock[] = [
   {
-    symbol: 'NVDA',
-    name: 'NVIDIA Corp',
-    price: 145.48,
-    change: 1.2,
-    pe: 75.1,
-    volume: '41.2M',
-    marketCap: '$3.5T',
+    symbol: 'SM',
+    name: 'SM Investments Corp.',
+    price: 920,
+    change: 1.1,
+    pe: 14.2,
+    volume: '218K',
+    marketCap: '₱707.3B',
+    tradingViewSymbol: 'PSE:SM',
     series: {
-      '1D': [141, 142, 141.7, 142.8, 143.2, 144.1, 145.4],
-      '1W': [138, 139, 140.5, 141, 142.8, 144.1, 145.4],
-      '1M': [132, 133.5, 136, 138, 140.2, 143.1, 145.4],
-      '3M': [120, 123, 126.4, 129, 134.1, 139.2, 145.4],
-      '1Y': [84, 89.1, 93.5, 109.2, 122, 136.4, 145.4],
+      '1D': [908, 910, 912, 916, 914, 918, 920],
+      '1W': [892, 898, 904, 907, 912, 917, 920],
+      '1M': [856, 864, 873, 884, 895, 907, 920],
+      '3M': [812, 828, 846, 865, 882, 902, 920],
+      '1Y': [690, 712, 738, 770, 810, 868, 920],
     },
   },
   {
-    symbol: 'AAPL',
-    name: 'Apple Inc',
-    price: 129.12,
-    change: -0.4,
-    pe: 28.9,
-    volume: '36.8M',
-    marketCap: '$2.9T',
+    symbol: 'BDO',
+    name: 'BDO Unibank',
+    price: 145.2,
+    change: 0.5,
+    pe: 11.8,
+    volume: '4.2M',
+    marketCap: '₱776.9B',
+    tradingViewSymbol: 'PSE:BDO',
     series: {
-      '1D': [129.8, 129.4, 130.1, 129.9, 129.6, 129.2, 129.1],
-      '1W': [131.2, 130.4, 130.2, 129.7, 129.6, 129.2, 129.1],
-      '1M': [126.2, 127.5, 128.4, 129.2, 129.8, 129.1, 129.1],
-      '3M': [121.5, 123.8, 125.9, 127.2, 128.6, 129.3, 129.1],
-      '1Y': [112.1, 114.2, 117.8, 121.3, 124.7, 127.8, 129.1],
+      '1D': [143.5, 144, 144.2, 144.8, 145.1, 145, 145.2],
+      '1W': [141.3, 142.1, 143.4, 144.1, 144.7, 145, 145.2],
+      '1M': [136.9, 138.2, 139.5, 141.1, 142.8, 144.1, 145.2],
+      '3M': [129.6, 131.8, 134.2, 137.1, 139.8, 142.6, 145.2],
+      '1Y': [117.4, 121.3, 126.8, 132.7, 137.8, 142.5, 145.2],
     },
   },
   {
-    symbol: 'TSLA',
-    name: 'Tesla Inc',
-    price: 327.8,
-    change: 2.6,
-    pe: 66.4,
-    volume: '58.7M',
-    marketCap: '$1.0T',
+    symbol: 'ALI',
+    name: 'Ayala Land',
+    price: 32.35,
+    change: -0.2,
+    pe: 18.6,
+    volume: '11.3M',
+    marketCap: '₱482.5B',
+    tradingViewSymbol: 'PSE:ALI',
     series: {
-      '1D': [318, 320, 322, 321.2, 324, 326.1, 327.8],
-      '1W': [305, 307.5, 312.1, 315.8, 320.4, 325.5, 327.8],
-      '1M': [288, 292.3, 299.2, 307, 315.1, 321.2, 327.8],
-      '3M': [250, 258.4, 271.2, 284.9, 297.3, 311.4, 327.8],
-      '1Y': [182, 196.2, 223.4, 251.2, 279.3, 304.4, 327.8],
+      '1D': [32.4, 32.5, 32.3, 32.2, 32.1, 32.3, 32.35],
+      '1W': [31.9, 32.1, 32.2, 32.4, 32.3, 32.3, 32.35],
+      '1M': [30.8, 31.1, 31.4, 31.7, 32, 32.2, 32.35],
+      '3M': [28.2, 28.9, 29.7, 30.4, 31.1, 31.8, 32.35],
+      '1Y': [24.7, 25.5, 26.9, 28.4, 29.9, 31.4, 32.35],
     },
   },
   {
-    symbol: 'MSFT',
-    name: 'Microsoft',
-    price: 418.2,
-    change: 0.9,
-    pe: 37.3,
-    volume: '22.1M',
-    marketCap: '$3.1T',
+    symbol: 'JFC',
+    name: 'Jollibee Foods Corp.',
+    price: 235.6,
+    change: 1.7,
+    pe: 29.1,
+    volume: '1.8M',
+    marketCap: '₱264.6B',
+    tradingViewSymbol: 'PSE:JFC',
     series: {
-      '1D': [412, 412.5, 413.1, 414.2, 415.7, 417.4, 418.2],
-      '1W': [405, 407.2, 410.1, 412.7, 414.5, 416.8, 418.2],
-      '1M': [391, 395.4, 399.2, 404.1, 409.6, 414.2, 418.2],
-      '3M': [365, 372.1, 381.4, 390.9, 401.2, 410.6, 418.2],
-      '1Y': [314, 326.2, 347.8, 365.4, 381.7, 401.3, 418.2],
+      '1D': [230.2, 231.4, 232.1, 233.8, 234.6, 235.1, 235.6],
+      '1W': [224.8, 226.5, 228.9, 231.2, 233.4, 234.7, 235.6],
+      '1M': [216.1, 219.8, 223.5, 227.4, 230.8, 233.6, 235.6],
+      '3M': [201.2, 205.7, 211.8, 218.6, 225.4, 231.7, 235.6],
+      '1Y': [174.4, 182.8, 193.5, 206.1, 218.4, 229.8, 235.6],
+    },
+  },
+  {
+    symbol: 'ICT',
+    name: 'International Container Terminal Services',
+    price: 384.2,
+    change: 0.8,
+    pe: 22.5,
+    volume: '772K',
+    marketCap: '₱785.0B',
+    tradingViewSymbol: 'PSE:ICT',
+    series: {
+      '1D': [379.5, 380.2, 381.4, 382.1, 383.4, 383.9, 384.2],
+      '1W': [371.8, 373.1, 375.7, 378.2, 380.4, 382.8, 384.2],
+      '1M': [359.3, 363.2, 367.4, 371.9, 376.4, 380.2, 384.2],
+      '3M': [334.6, 340.8, 348.1, 356.9, 366.2, 375.1, 384.2],
+      '1Y': [281.4, 295.8, 313.7, 334.9, 356.4, 373.9, 384.2],
     },
   },
 ]
 
-const defaultSelectedSymbol = 'TSLA'
+const defaultSelectedSymbol = 'SM'
 const defaultSelectedStock = initialStocks.find((stock) => stock.symbol === defaultSelectedSymbol) ?? initialStocks[0]
 
 const bundles = [
-  { name: 'Tech Momentum', holdings: 'NVDA, MSFT, AMD, AVGO', risk: 'High' },
-  { name: 'Dividend Core', holdings: 'KO, JNJ, PG, PEP', risk: 'Low' },
-  { name: 'ESG Future', holdings: 'ENPH, TSLA, NEE, VWS', risk: 'Medium' },
+  { name: 'PSE Blue Chip Core', holdings: 'SM, BDO, ICT, ALI', risk: 'Medium' },
+  { name: 'Dividend Income PH', holdings: 'TEL, MER, SCC, GLO', risk: 'Low' },
+  { name: 'Growth Leaders PH', holdings: 'JFC, ACEN, BLOOM, RRHI', risk: 'High' },
 ]
 
 type LearningContentType = 'video' | 'module' | 'game'
@@ -389,17 +412,44 @@ const dashboardActivities: DashboardActivity[] = [
 ]
 
 const marketWatch = [
-  { name: 'PSEi', level: '6,845.14', change: 0.86, note: 'Financials leading' },
-  { name: 'S&P 500', level: '5,216.48', change: 0.41, note: 'Broad risk-on tone' },
-  { name: 'NASDAQ 100', level: '18,390.05', change: 0.73, note: 'AI megacaps firm' },
-  { name: 'USD/PHP', level: '56.12', change: -0.27, note: 'Peso recovering' },
+  { name: 'PSEi', level: '6,845.14', change: 0.86, note: 'Financials leading gains' },
+  { name: 'All Shares', level: '3,704.22', change: 0.58, note: 'Broad local participation' },
+  { name: 'PSE Financials', level: '1,626.44', change: 0.77, note: 'Banks remain resilient' },
+  { name: 'USD/PHP', level: '56.12', change: -0.27, note: 'Peso showing strength' },
 ]
 
 const tradingHoldings = [
-  { symbol: 'NVDA', shares: 28, avgPrice: 131.4 },
-  { symbol: 'MSFT', shares: 18, avgPrice: 402.7 },
-  { symbol: 'TSLA', shares: 15, avgPrice: 302.9 },
-  { symbol: 'AAPL', shares: 24, avgPrice: 134.1 },
+  { symbol: 'SM', shares: 36, avgPrice: 874.5 },
+  { symbol: 'BDO', shares: 180, avgPrice: 138.1 },
+  { symbol: 'JFC', shares: 58, avgPrice: 218.9 },
+  { symbol: 'ICT', shares: 31, avgPrice: 352.4 },
+]
+
+type QuickAction = {
+  label: string
+  detail: string
+  icon: string
+  primary?: boolean
+}
+
+const dashboardQuickActions: QuickAction[] = [
+  { label: 'Add Funds', detail: 'Top up wallet instantly', icon: '💸' },
+  { label: 'Withdraw', detail: 'Move cash to bank', icon: '🏦' },
+  { label: 'Invest in Products', detail: 'Allocate to managed baskets', icon: '📦' },
+  { label: 'Contribute to PERA', detail: 'Boost retirement target', icon: '🎯', primary: true },
+]
+
+type ManualContribution = {
+  id: string
+  account: string
+  amount: number
+  note: string
+  date: string
+}
+
+const initialManualContributions: ManualContribution[] = [
+  { id: 'contrib-1', account: 'PERA Core Retirement', amount: 800, note: 'Monthly auto contribution', date: '2026-04-12' },
+  { id: 'contrib-2', account: 'Balanced Income', amount: 2500, note: 'Manual top-up before quarter-end', date: '2026-04-06' },
 ]
 
 const managedPortfolios = [
@@ -486,6 +536,25 @@ function LearningIcon() {
     <SvgIcon>
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </SvgIcon>
+  )
+}
+
+function ProductsIcon() {
+  return (
+    <SvgIcon>
+      <path d="M3 7h18v10H3z" />
+      <path d="M3 12h18" />
+      <path d="M9 7v10" />
+    </SvgIcon>
+  )
+}
+
+function ContributionsIcon() {
+  return (
+    <SvgIcon>
+      <path d="M12 3v18" />
+      <path d="M7 8.5a4.5 4.5 0 0 1 9 0c0 6-9 2-9 7a4.5 4.5 0 0 0 9 0" />
     </SvgIcon>
   )
 }
@@ -650,28 +719,12 @@ function GeometricPanel() {
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 
-function chartPath(points: number[]) {
-  if (!points.length) return ''
-  const min = Math.min(...points)
-  const max = Math.max(...points)
-  const range = max - min || 1
-
-  return points
-    .map((point, i) => {
-      const x = (i / (points.length - 1 || 1)) * 100
-      const y = 100 - ((point - min) / range) * 100
-      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-    })
-    .join(' ')
-}
-
 function sumSeries(seriesA: number[], seriesB: number[]) {
   const length = Math.max(seriesA.length, seriesB.length)
   return Array.from({ length }, (_, index) => (seriesA[index] ?? 0) + (seriesB[index] ?? 0))
 }
 
 const PERA_PROJECTION_YEARS = 25
-const DEFAULT_CHART_MAX_VALUE = 1
 const SEED_CONTRIB_BASE_MULTIPLIER = 0.85
 const SEED_CONTRIB_STEP_MULTIPLIER = 0.03
 const SEED_HOLDING_BASE_MULTIPLIER = 0.38
@@ -724,7 +777,6 @@ function App() {
   const [learningFeedback, setLearningFeedback] = useState<Record<string, 'like' | 'dislike' | null>>({})
   const [selectedLearningContentId, setSelectedLearningContentId] = useState<string | null>(null)
   const [selected, setSelected] = useState(defaultSelectedSymbol)
-  const tradingRange: Range = '1D'
   const [orderType, setOrderType] = useState<'Market' | 'Limit'>('Market')
   const [orderSide, setOrderSide] = useState<'Buy' | 'Sell'>('Buy')
   const [quantity, setQuantity] = useState(10)
@@ -738,10 +790,17 @@ function App() {
   const [isSponsoredPaused, setIsSponsoredPaused] = useState(false)
   const [showPeraAccounts, setShowPeraAccounts] = useState(false)
   const [showManagedPortfolios, setShowManagedPortfolios] = useState(false)
+  const [selectedManagedPortfolioId, setSelectedManagedPortfolioId] = useState(managedPortfolios[0].id)
   const [peraAccounts, setPeraAccounts] = useState(initialPeraAccounts)
   const [activePeraAccountId, setActivePeraAccountId] = useState(initialPeraAccounts[0].id)
   const [peraHoldingsByAccount, setPeraHoldingsByAccount] = useState(initialPeraHoldingsByAccount)
   const [peraContribByAccount, setPeraContribByAccount] = useState(initialPeraContribByAccount)
+  const [contributionAmount, setContributionAmount] = useState(1000)
+  const [contributionAccount, setContributionAccount] = useState('PERA Core Retirement')
+  const [contributionNote, setContributionNote] = useState('')
+  const [manualContributions, setManualContributions] = useState(initialManualContributions)
+  const [contributionGoalTarget, setContributionGoalTarget] = useState(120000)
+  const [contributionGoalMonths, setContributionGoalMonths] = useState(24)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const learningModalRef = useRef<HTMLDivElement>(null)
   const isSponsoredPausedRef = useRef(false)
@@ -922,6 +981,8 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
     { id: 'trading', label: 'Trading', icon: <TradingIcon /> },
     { id: 'pera', label: 'PERA', icon: <PERAIcon /> },
+    { id: 'products', label: 'Products', icon: <ProductsIcon /> },
+    { id: 'contributions', label: 'Contributions', icon: <ContributionsIcon /> },
     { id: 'learning', label: 'Learning Hub', icon: <LearningIcon /> },
   ] as const
 
@@ -929,6 +990,8 @@ function App() {
     dashboard: 'Dashboard',
     trading: 'Trading',
     pera: 'PERA',
+    products: 'Products',
+    contributions: 'Contributions',
     learning: 'Learning Hub',
   }
 
@@ -1140,6 +1203,10 @@ function App() {
   const managedTotalInvested = useMemo(() => managedPortfolios.reduce((sum, portfolio) => sum + portfolio.invested, 0), [])
   const managedTotalValue = useMemo(() => managedPortfolios.reduce((sum, portfolio) => sum + portfolio.value, 0), [])
   const managedTop = useMemo(() => managedPortfolios.slice(0, 2), [])
+  const selectedManagedPortfolio = useMemo(
+    () => managedPortfolios.find((portfolio) => portfolio.id === selectedManagedPortfolioId) ?? managedPortfolios[0],
+    [selectedManagedPortfolioId],
+  )
   const managedPerformancePct = safePercentage(managedTotalValue - managedTotalInvested, managedTotalInvested)
 
   const totalNetWorth = tradingMarketValue + totalPeraValueAllAccounts + managedTotalValue
@@ -1184,6 +1251,10 @@ function App() {
   }, [managedTotalValue, totalPeraValueAllAccounts, tradingMarketValue])
 
   const currentDashboardSeries = accountSeriesByFilter[dashboardFilter][dashboardRange]
+  const dashboardChartData = useMemo(
+    () => currentDashboardSeries.map((value, index) => ({ point: index + 1, value })),
+    [currentDashboardSeries],
+  )
   const stocksAmount =
     tradingMarketValue * TRADING_EQUITY_ALLOCATION +
     managedTotalValue * MANAGED_EQUITY_ALLOCATION +
@@ -1197,6 +1268,45 @@ function App() {
   const bondsExposureEnd = equitiesExposure + bondsExposure
   const peraAccountsCount = peraAccounts.length
   const equitiesExposurePct = equitiesExposure
+  const activePeraContribChartData = useMemo(
+    () => activePeraContrib.map((item) => ({ month: item.month, amount: item.amount, target: item.target })),
+    [activePeraContrib],
+  )
+  const peraGrowthChartData = useMemo(() => {
+    const projectedSeries: { month: string; value: number }[] = []
+    let value = activePeraHoldings.reduce((sum, holding) => sum + holding.value, 0)
+    const monthlyRate = annualReturn / 12
+    for (let month = 1; month <= 12; month += 1) {
+      value = value * (1 + monthlyRate) + monthlyContribution
+      projectedSeries.push({ month: `M${month}`, value: Number(value.toFixed(2)) })
+    }
+    return projectedSeries
+  }, [activePeraHoldings, annualReturn, monthlyContribution])
+  const manualContributionsTotal = useMemo(
+    () => manualContributions.reduce((sum, contribution) => sum + contribution.amount, 0),
+    [manualContributions],
+  )
+  const goalProgressAmount = Math.min(manualContributionsTotal, contributionGoalTarget)
+  const goalProgressPct = safePercentage(goalProgressAmount, contributionGoalTarget)
+  const recommendedMonthlyGoal = contributionGoalMonths > 0 ? Math.ceil((contributionGoalTarget - manualContributionsTotal) / contributionGoalMonths) : 0
+  const contributionMilestones = useMemo(
+    () => [
+      { label: 'Kickoff funded', target: Math.round(contributionGoalTarget * 0.25) },
+      { label: 'Halfway target', target: Math.round(contributionGoalTarget * 0.5) },
+      { label: 'Stretch zone', target: Math.round(contributionGoalTarget * 0.75) },
+      { label: 'Goal complete', target: contributionGoalTarget },
+    ],
+    [contributionGoalTarget],
+  )
+  const contributionSimulationData = useMemo(
+    () =>
+      Array.from({ length: Math.max(1, contributionGoalMonths) }, (_, index) => {
+        const month = index + 1
+        const value = manualContributionsTotal + month * Math.max(recommendedMonthlyGoal, 0)
+        return { month: `M${month}`, value }
+      }),
+    [contributionGoalMonths, manualContributionsTotal, recommendedMonthlyGoal],
+  )
   const timeOfDay = useMemo(() => {
     const hour = new Date().getHours()
     if (hour < AFTERNOON_HOUR_START) return 'morning'
@@ -1224,6 +1334,21 @@ function App() {
     window.requestAnimationFrame(() => {
       document.getElementById(`sponsored-dot-${nextIndex}`)?.focus()
     })
+  }
+  function handleContributionSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (contributionAmount <= 0) return
+    setManualContributions((previous) => [
+      {
+        id: `contrib-${Date.now()}`,
+        account: contributionAccount,
+        amount: contributionAmount,
+        note: contributionNote.trim() || 'Manual contribution',
+        date: new Date().toISOString().slice(0, 10),
+      },
+      ...previous,
+    ])
+    setContributionNote('')
   }
 
   const dashboardView = (
@@ -1260,40 +1385,67 @@ function App() {
         </div>
       </section>
 
-      <section className="card dashboard-morning-card">
-        <h3>Morning Notes</h3>
-        <p className="dashboard-morning-greeting">Good {timeOfDay}.</p>
-        <ul className="list dashboard-note-list">
-          <li>
-            <div>
-              <strong>Focus watchlist volatility</strong>
-              <p>{marketBreadth}% of tracked names are green.</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <strong>PERA pace check</strong>
-              <p>Contribution progress is at {peraGoalProgress}% of long-term target.</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <strong>Cash ready to deploy</strong>
-              <p>Use quick actions below to rebalance or add to PERA.</p>
-            </div>
-          </li>
-        </ul>
+      <section
+        className="card dashboard-sponsored-card dashboard-sponsored-card--hero"
+        onMouseEnter={() => setIsSponsoredPaused(true)}
+        onMouseLeave={resumeSponsoredCarousel}
+        onFocusCapture={() => setIsSponsoredPaused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            resumeSponsoredCarousel()
+          }
+        }}
+      >
+        <div className="dashboard-sponsored-top">
+          <h3>Ad Spotlight</h3>
+          <span>
+            {sponsoredIndex + 1} / {sponsoredContents.length}
+          </span>
+        </div>
+        <article id="sponsored-slide-panel" className="dashboard-sponsored-slide" role="tabpanel" aria-labelledby={`sponsored-dot-${sponsoredIndex}`}>
+          <p>{activeSponsoredContent.sponsor}</p>
+          <strong>{activeSponsoredContent.title}</strong>
+          <small>{activeSponsoredContent.summary}</small>
+          <div className="dashboard-sponsored-meta">
+            <span>{activeSponsoredContent.badge}</span>
+            <small>{activeSponsoredContent.footnote}</small>
+          </div>
+          <button type="button" className="primary">
+            {activeSponsoredContent.cta}
+          </button>
+        </article>
+        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Navigate sponsored content slides">
+          {sponsoredContents.map((item, index) => (
+            <button
+              key={item.title}
+              id={`sponsored-dot-${index}`}
+              type="button"
+              role="tab"
+              aria-controls="sponsored-slide-panel"
+              aria-selected={sponsoredIndex === index}
+              tabIndex={sponsoredIndex === index ? 0 : -1}
+              className={sponsoredIndex === index ? 'active' : ''}
+              onClick={() => goToSponsoredIndex(index)}
+              onKeyDown={(event) => handleSponsoredTabKeyDown(event, index)}
+            >
+              <span className="sr-only">{item.title}</span>
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="card span-3 dashboard-action-bar">
         <h3>Quick Actions</h3>
         <div className="dashboard-action-buttons">
-          <button type="button">Deposit</button>
-          <button type="button">Withdraw</button>
-          <button type="button">Invest (managed portfolios)</button>
-          <button type="button" className="primary">
-            Contribute to PERA
-          </button>
+          {dashboardQuickActions.map((action) => (
+            <button key={action.label} type="button" className={action.primary ? 'primary' : ''}>
+              <span>{action.icon}</span>
+              <div>
+                <strong>{action.label}</strong>
+                <small>{action.detail}</small>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -1317,29 +1469,47 @@ function App() {
             </div>
           </div>
         </div>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart dashboard-unified-chart">
-          <path d={chartPath(currentDashboardSeries)} />
-        </svg>
+        <div className="recharts-shell dashboard-unified-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={dashboardChartData}>
+              <defs>
+                <linearGradient id="dashboardAreaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0.03} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+              <XAxis dataKey="point" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value).toLocaleString()}`} width={84} />
+              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+              <Area type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} fill="url(#dashboardAreaFill)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </section>
 
       <section className="card dashboard-market-card">
-        <h3>Market Information</h3>
-        <ul className="list dashboard-market-list">
-          {marketWatch.map((item) => (
-            <li key={item.name}>
-              <div>
-                <strong>{item.name}</strong>
-                <p>{item.note}</p>
-              </div>
-              <div className="dashboard-market-values">
-                <span>{item.level}</span>
-                <small className={item.change >= 0 ? 'positive' : 'negative'}>
-                  {item.change >= 0 ? '+' : ''}
-                  {item.change.toFixed(2)}%
-                </small>
-              </div>
-            </li>
-          ))}
+        <h3>Morning Notes</h3>
+        <p className="dashboard-morning-greeting">Good {timeOfDay}.</p>
+        <ul className="list dashboard-note-list">
+          <li>
+            <div>
+              <strong>Focus watchlist volatility</strong>
+              <p>{marketBreadth}% of tracked names are positive today.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>PERA pace check</strong>
+              <p>Contribution progress is at {peraGoalProgress}% of your long-term target.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Cash deployment window</strong>
+              <p>Use quick actions to route cash to products or PERA before the close.</p>
+            </div>
+          </li>
         </ul>
       </section>
 
@@ -1492,62 +1662,29 @@ function App() {
         </ul>
       </section>
 
-      <section
-        className="card dashboard-sponsored-card"
-        onMouseEnter={() => setIsSponsoredPaused(true)}
-        onMouseLeave={resumeSponsoredCarousel}
-        onFocusCapture={() => setIsSponsoredPaused(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-            resumeSponsoredCarousel()
-          }
-        }}
-      >
-        <div className="dashboard-sponsored-top">
-          <h3>Ad Spotlight</h3>
-          <span>
-            {sponsoredIndex + 1} / {sponsoredContents.length}
-          </span>
-        </div>
-        <article
-          id="sponsored-slide-panel"
-          className="dashboard-sponsored-slide"
-          role="tabpanel"
-          aria-labelledby={`sponsored-dot-${sponsoredIndex}`}
-        >
-          <p>{activeSponsoredContent.sponsor}</p>
-          <strong>{activeSponsoredContent.title}</strong>
-          <small>{activeSponsoredContent.summary}</small>
-          <div className="dashboard-sponsored-meta">
-            <span>{activeSponsoredContent.badge}</span>
-            <small>{activeSponsoredContent.footnote}</small>
-          </div>
-          <button type="button" className="primary">
-            {activeSponsoredContent.cta}
-          </button>
-        </article>
-        <div className="dashboard-sponsored-dots" role="tablist" aria-label="Navigate sponsored content slides">
-          {sponsoredContents.map((item, index) => (
-            <button
-              key={item.title}
-              id={`sponsored-dot-${index}`}
-              type="button"
-              role="tab"
-              aria-controls="sponsored-slide-panel"
-              aria-selected={sponsoredIndex === index}
-              tabIndex={sponsoredIndex === index ? 0 : -1}
-              className={sponsoredIndex === index ? 'active' : ''}
-              onClick={() => goToSponsoredIndex(index)}
-              onKeyDown={(event) => handleSponsoredTabKeyDown(event, index)}
-            >
-              <span className="sr-only">{item.title}</span>
-            </button>
+      <section className="card dashboard-market-card dashboard-market-card--insights">
+        <h3>Market Information</h3>
+        <ul className="list dashboard-market-list">
+          {marketWatch.map((item) => (
+            <li key={item.name}>
+              <div>
+                <strong>{item.name}</strong>
+                <p>{item.note}</p>
+              </div>
+              <div className="dashboard-market-values">
+                <span>{item.level}</span>
+                <small className={item.change >= 0 ? 'positive' : 'negative'}>
+                  {item.change >= 0 ? '+' : ''}
+                  {item.change.toFixed(2)}%
+                </small>
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      <section className="card span-3 dashboard-insights-card">
-        <h3>Insights</h3>
+      <section className="card span-2 dashboard-insights-card">
+        <h3>Market Insights</h3>
         <ul className="list dashboard-insights-list">
           <li>
             <div>
@@ -1581,7 +1718,7 @@ function App() {
       <section className="card span-2">
         <div className="heading-row">
           <h3>Stock Explorer</h3>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search stock" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search Philippine stocks" />
         </div>
         <div className="stock-list">
           {filteredStocks.map((stock) => (
@@ -1598,17 +1735,21 @@ function App() {
                 <strong>{stock.symbol}</strong>
                 <small>{stock.name}</small>
               </span>
-              <span>${stock.price.toFixed(2)}</span>
+              <span>₱{stock.price.toFixed(2)}</span>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="card">
+      <section className="card span-2">
         <h3>{selectedStock.name}</h3>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
-          <path d={chartPath(selectedStock.series[tradingRange])} />
-        </svg>
+        <div className="tv-chart">
+          <iframe
+            title={`${selectedStock.symbol} TradingView chart`}
+            className="tv-chart-host"
+            src={`https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(selectedStock.tradingViewSymbol)}&interval=30&hidesidetoolbar=1&symboledit=1&theme=${theme}&style=1&timezone=Asia%2FManila&studies=[]&hideideas=1&saveimage=0`}
+          />
+        </div>
         <div className="metric-grid">
           <p>
             <span>P/E</span>
@@ -1624,7 +1765,7 @@ function App() {
           </p>
           <p>
             <span>Price</span>
-            <strong>${selectedStock.price.toFixed(2)}</strong>
+            <strong>₱{selectedStock.price.toFixed(2)}</strong>
           </p>
         </div>
       </section>
@@ -1662,11 +1803,33 @@ function App() {
           </label>
         )}
         <p>
-          Estimated cost: <strong>${estimatedOrderCost.toFixed(2)}</strong>
+          Estimated cost: <strong>₱{estimatedOrderCost.toFixed(2)}</strong>
         </p>
+        <small className="order-ticket-note">All orders are routed to Philippine market symbols only.</small>
         <button type="button" className="primary">
           {orderSide} {selectedStock.symbol}
         </button>
+      </section>
+
+      <section className="card">
+        <h3>Market Snapshot</h3>
+        <ul className="list">
+          <li>
+            <span>Daily change</span>
+            <strong className={selectedStock.change >= 0 ? 'positive' : 'negative'}>
+              {selectedStock.change >= 0 ? '+' : ''}
+              {selectedStock.change.toFixed(2)}%
+            </strong>
+          </li>
+          <li>
+            <span>Suggested range</span>
+            <strong>₱{(selectedStock.price * 0.985).toFixed(2)} - ₱{(selectedStock.price * 1.015).toFixed(2)}</strong>
+          </li>
+          <li>
+            <span>Watchlist breadth</span>
+            <strong>{marketBreadth}% green</strong>
+          </li>
+        </ul>
       </section>
 
       <section className="card span-3">
@@ -1689,9 +1852,6 @@ function App() {
   const ytdContrib = activePeraContrib.reduce((sum, m) => sum + m.amount, 0)
   const ytdTarget = activePeraContrib.reduce((sum, m) => sum + m.target, 0)
   const contribPct = safePercentage(ytdContrib, ytdTarget)
-  const maxContrib = activePeraContrib.length
-    ? Math.max(...activePeraContrib.map((m) => m.target))
-    : DEFAULT_CHART_MAX_VALUE
   const activeFundAlloc = Object.entries(
     activePeraHoldings.reduce<Record<string, number>>((totals, holding) => {
       totals[holding.type] = (totals[holding.type] ?? 0) + holding.value
@@ -1863,19 +2023,17 @@ function App() {
           <h3>Contribution History</h3>
           <span className="pera-pace-badge">{contribPct}% of pace</span>
         </div>
-        <div className="pera-contrib-bars">
-          {activePeraContrib.map((m) => (
-            <div key={m.month} className="pera-contrib-col">
-              <div className="pera-bar-wrap">
-                <div
-                  className="pera-bar"
-                  style={{ height: `${(m.amount / maxContrib) * 100}%` }}
-                  title={`₱${m.amount}`}
-                />
-              </div>
-              <span>{m.month}</span>
-            </div>
-          ))}
+        <div className="recharts-shell pera-contrib-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={activePeraContribChartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value)}`} width={74} />
+              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString()}`} />
+              <Bar dataKey="target" fill="color-mix(in srgb, var(--border) 86%, var(--panel))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="amount" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
         <label>
           Monthly contribution target
@@ -1905,9 +2063,17 @@ function App() {
             />
           </label>
         </div>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart">
-          <path d={chartPath([12, 13, 14, 15.5, 17.2, 18.6, 20.3, 23.1, 24.8, 27.4, 29.1, 32])} />
-        </svg>
+        <div className="recharts-shell pera-growth-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={peraGrowthChartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value / 1000)}k`} width={74} />
+              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+              <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2.5} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </section>
 
       {/* ── Retirement Projection ────────────────────────── */}
@@ -1958,9 +2124,219 @@ function App() {
     </div>
   )
 
+  const productsView = (
+    <div className="grid products-grid">
+      <section className="card span-3 products-hero">
+        <div>
+          <span className="summary-anchor">Managed Products</span>
+          <h3>Hold professionally managed portfolios aligned to your goals</h3>
+          <p>Compare strategies, inspect performance, and adjust your current holdings in one page.</p>
+        </div>
+        <strong>₱{managedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
+      </section>
+
+      <section className="card span-2">
+        <h3>Your Managed Portfolio Holdings</h3>
+        <div className="stock-list">
+          {managedPortfolios.map((portfolio) => {
+            const gainPct = safePercentage(portfolio.value - portfolio.invested, portfolio.invested)
+            return (
+              <button
+                key={portfolio.id}
+                type="button"
+                className={`stock-item ${selectedManagedPortfolioId === portfolio.id ? 'active' : ''}`}
+                onClick={() => setSelectedManagedPortfolioId(portfolio.id)}
+              >
+                <span>
+                  <strong>{portfolio.name}</strong>
+                  <small>Invested ₱{portfolio.invested.toLocaleString()}</small>
+                </span>
+                <span className={gainPct >= 0 ? 'positive' : 'negative'}>
+                  {gainPct >= 0 ? '+' : ''}
+                  {gainPct}%
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="card">
+        <h3>{selectedManagedPortfolio.name}</h3>
+        <p>Current value: ₱{selectedManagedPortfolio.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+        <p>Invested capital: ₱{selectedManagedPortfolio.invested.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+        <p className={selectedManagedPortfolio.value >= selectedManagedPortfolio.invested ? 'positive' : 'negative'}>
+          Net performance: {selectedManagedPortfolio.value >= selectedManagedPortfolio.invested ? '+' : ''}₱
+          {Math.abs(selectedManagedPortfolio.value - selectedManagedPortfolio.invested).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        </p>
+        <div className="dashboard-action-buttons">
+          <button type="button">
+            <span>➕</span>
+            <div>
+              <strong>Add funds</strong>
+              <small>Increase holding allocation</small>
+            </div>
+          </button>
+          <button type="button">
+            <span>⚖️</span>
+            <div>
+              <strong>Rebalance</strong>
+              <small>Match target risk profile</small>
+            </div>
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+
+  const contributionsView = (
+    <div className="grid contributions-grid">
+      <section className="card span-3 contributions-goal-card">
+        <div className="heading-row">
+          <h3>Contribution Goal Simulator</h3>
+          <span className="pera-pace-badge">{goalProgressPct}% achieved</span>
+        </div>
+        <div className="dashboard-summary-metrics">
+          <article>
+            <span>Goal target</span>
+            <p>₱{contributionGoalTarget.toLocaleString()}</p>
+          </article>
+          <article>
+            <span>Contributed</span>
+            <p>₱{manualContributionsTotal.toLocaleString()}</p>
+          </article>
+          <article>
+            <span>Recommended monthly</span>
+            <p>₱{Math.max(0, recommendedMonthlyGoal).toLocaleString()}</p>
+          </article>
+        </div>
+        <div className="contribution-goal-inputs">
+          <label>
+            Goal amount
+            <input
+              type="number"
+              min={1}
+              value={contributionGoalTarget}
+              onChange={(event) => setContributionGoalTarget(Math.max(1, Number(event.target.value) || 1))}
+            />
+          </label>
+          <label>
+            Timeline (months)
+            <input
+              type="number"
+              min={1}
+              value={contributionGoalMonths}
+              onChange={(event) => setContributionGoalMonths(Math.max(1, Number(event.target.value) || 1))}
+            />
+          </label>
+        </div>
+        <div className="recharts-shell contribution-simulation-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={contributionSimulationData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `₱${Math.round(value / 1000)}k`} width={74} />
+              <Tooltip formatter={(value: number) => `₱${Number(value).toLocaleString()}`} />
+              <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2.5} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <section className="card">
+        <h3>Manual Contribution Entry</h3>
+        <form className="contribution-form" onSubmit={handleContributionSubmit}>
+          <label>
+            Account
+            <select value={contributionAccount} onChange={(event) => setContributionAccount(event.target.value)}>
+              <option>PERA Core Retirement</option>
+              {managedPortfolios.map((portfolio) => (
+                <option key={portfolio.id}>{portfolio.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Amount
+            <input
+              type="number"
+              min={1}
+              value={contributionAmount}
+              onChange={(event) => setContributionAmount(Math.max(1, Number(event.target.value) || 1))}
+            />
+          </label>
+          <label>
+            Note
+            <input value={contributionNote} onChange={(event) => setContributionNote(event.target.value)} placeholder="Optional note" />
+          </label>
+          <button type="submit" className="primary">
+            Submit contribution
+          </button>
+        </form>
+      </section>
+
+      <section className="card span-2">
+        <h3>Milestone Snippet</h3>
+        <ul className="list snippet-list">
+          {contributionMilestones.map((milestone) => {
+            const reached = manualContributionsTotal >= milestone.target
+            return (
+              <li key={milestone.label}>
+                <div>
+                  <strong>{milestone.label}</strong>
+                  <p>Target: ₱{milestone.target.toLocaleString()}</p>
+                </div>
+                <small className={reached ? 'positive' : ''}>{reached ? 'Reached' : 'Pending'}</small>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      <section className="card span-3">
+        <h3>Submitted Contributions</h3>
+        <ul className="list dashboard-activity-list">
+          {manualContributions.map((entry) => (
+            <li key={entry.id}>
+              <div>
+                <strong>{entry.account}</strong>
+                <p>{entry.note}</p>
+              </div>
+              <div className="dashboard-activity-values">
+                <small>{entry.date}</small>
+                <span className="positive">+₱{entry.amount.toLocaleString()}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  )
+
   const learningView = (
     <>
       <div className="grid learning-grid">
+        <section className="card span-3 learning-hub-banner">
+          <div>
+            <span className="summary-anchor">Learning Pathways</span>
+            <h3>Build investing confidence with videos, guided modules, and hands-on games</h3>
+            <p>Pick a content type based on how you prefer to learn today.</p>
+          </div>
+          <div className="learning-banner-stats">
+            <article>
+              <strong>{learningContents.filter((item) => item.type === 'video').length}</strong>
+              <span>Videos</span>
+            </article>
+            <article>
+              <strong>{learningContents.filter((item) => item.type === 'module').length}</strong>
+              <span>Modules</span>
+            </article>
+            <article>
+              <strong>{learningContents.filter((item) => item.type === 'game').length}</strong>
+              <span>Games</span>
+            </article>
+          </div>
+        </section>
+
         <section className="card span-3 learning-hub-toolbar">
           <div>
             <h3>Learning Hub</h3>
@@ -2039,6 +2415,11 @@ function App() {
                   <small className="learning-content-duration">{item.duration}</small>
                 </div>
                 <div className="learning-content-body">
+                  <span className={`learning-card-signature learning-card-signature--${item.type}`}>
+                    {item.type === 'video' && 'Watch & learn'}
+                    {item.type === 'module' && 'Step-by-step path'}
+                    {item.type === 'game' && 'Interactive challenge'}
+                  </span>
                   <h4>{item.title}</h4>
                   <p>{item.description}</p>
                 </div>
@@ -2241,6 +2622,8 @@ function App() {
           {page === 'dashboard' && dashboardView}
           {page === 'trading' && tradingView}
           {page === 'pera' && peraView}
+          {page === 'products' && productsView}
+          {page === 'contributions' && contributionsView}
           {page === 'learning' && learningView}
         </div>
       </div>
