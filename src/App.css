@@ -588,12 +588,13 @@
   display: grid;
   gap: 12px;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.15s;
+  box-shadow: none;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
 }
 
 .card h3,
@@ -692,15 +693,9 @@ button.active,
 }
 
 .fintech-dashboard .card {
-  --fintech-card-glow-y: 18px;
-  --fintech-card-glow-blur: 32px;
-  --fintech-card-glow-spread: -26px;
-  --fintech-card-glow-accent-mix: 42%;
   border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   background: linear-gradient(165deg, var(--panel), color-mix(in srgb, var(--panel-strong) 70%, var(--panel)));
-  box-shadow:
-    0 var(--fintech-card-glow-y) var(--fintech-card-glow-blur) var(--fintech-card-glow-spread)
-    color-mix(in srgb, var(--accent) var(--fintech-card-glow-accent-mix), transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--panel-strong) 68%, transparent);
 }
 
 .dashboard-summary-card {
