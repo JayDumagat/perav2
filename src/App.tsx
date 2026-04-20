@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { Box, Flex, HStack, IconButton, Text } from '@chakra-ui/react'
+import { Box, Flex, HStack, Text } from '@chakra-ui/react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import './App.css'
 
@@ -2589,9 +2589,9 @@ function App() {
           </Box>
           <HStack className="header-right">
             <Box className="notif-btn-wrap" position="relative">
-              <IconButton type="button" className="icon-btn" aria-label="Notifications" variant="outline" size="sm">
+              <button type="button" className="icon-btn" aria-label="Notifications">
                 <BellIcon />
-              </IconButton>
+              </button>
               <span className="notif-badge">3</span>
             </Box>
             <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
