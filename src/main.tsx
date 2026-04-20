@@ -1,14 +1,20 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ChakraProvider } from '@chakra-ui/react'
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import './index.css'
 import App from './App.tsx'
-import { system } from './theme.ts'
+
+const theme = createTheme({
+  typography: {
+    fontFamily: `'Inter', 'Segoe UI', system-ui, sans-serif`,
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ChakraProvider value={system}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <App />
-    </ChakraProvider>
+    </ThemeProvider>
   </StrictMode>,
 )
