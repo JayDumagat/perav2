@@ -12,9 +12,6 @@ const config = defineConfig({
       radii: {
         xl: { value: '16px' },
       },
-      shadows: {
-        md: { value: '0 10px 30px rgba(15, 23, 42, 0.08)' },
-      },
     },
   },
 })
