@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { Box, Flex, HStack, Text } from '@chakra-ui/react'
+import { Box, Stack, Typography } from '@mui/material'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import './App.css'
 
@@ -2550,8 +2550,8 @@ function App() {
   }
 
   return (
-    <Flex className="app-shell">
-      <Box as="aside" className="sidebar">
+    <Box className="app-shell">
+      <Box component="aside" className="sidebar">
         <div className="sidebar-logo">
           <span className="logo-mark">P</span>
           PERA Trade
@@ -2582,13 +2582,13 @@ function App() {
       </Box>
 
       <Box className="main-area">
-        <Flex as="header" className="app-header">
+        <Box component="header" className="app-header">
           <Box className="header-left">
             <h2>{pageTitle[page]}</h2>
-            <Text as="p">Data-first interface for stocks, portfolios, and retirement planning.</Text>
+            <Typography component="p">Data-first interface for stocks, portfolios, and retirement planning.</Typography>
           </Box>
-          <HStack className="header-right">
-            <Box className="notif-btn-wrap" position="relative">
+          <Stack direction="row" className="header-right">
+            <Box className="notif-btn-wrap">
               <button type="button" className="icon-btn" aria-label="Notifications">
                 <BellIcon />
               </button>
@@ -2626,8 +2626,8 @@ function App() {
                 </div>
               )}
             </div>
-          </HStack>
-        </Flex>
+          </Stack>
+        </Box>
 
         <div className="content-area">
           {page === 'dashboard' && dashboardView}
@@ -2638,7 +2638,7 @@ function App() {
           {page === 'learning' && learningView}
         </div>
       </Box>
-    </Flex>
+    </Box>
   )
 }
 
