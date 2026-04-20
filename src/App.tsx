@@ -2588,7 +2588,7 @@ function App() {
             <Typography component="p">Data-first interface for stocks, portfolios, and retirement planning.</Typography>
           </Box>
           <Stack direction="row" className="header-right">
-            <Box className="notif-btn-wrap" sx={{ position: 'relative' }}>
+            <Box className="notif-btn-wrap">
               <button type="button" className="icon-btn" aria-label="Notifications">
                 <BellIcon />
               </button>
