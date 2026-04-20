@@ -2588,10 +2588,12 @@ function App() {
             <Text as="p">Data-first interface for stocks, portfolios, and retirement planning.</Text>
           </Box>
           <HStack className="header-right">
-            <IconButton type="button" className="icon-btn" aria-label="Notifications" variant="outline" size="sm">
-              <BellIcon />
+            <Box className="notif-btn-wrap">
+              <IconButton type="button" className="icon-btn" aria-label="Notifications" variant="outline" size="sm">
+                <BellIcon />
+              </IconButton>
               <span className="notif-badge">3</span>
-            </IconButton>
+            </Box>
             <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
               <button type="button" className="avatar-btn" onClick={() => setDropdownOpen((v) => !v)}>
                 <div className="avatar">JL</div>
