@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { Box, Flex, HStack, Text } from '@chakra-ui/react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import './App.css'
 
@@ -2549,8 +2550,8 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <Flex className="app-shell">
+      <Box as="aside" className="sidebar">
         <div className="sidebar-logo">
           <span className="logo-mark">P</span>
           PERA Trade
@@ -2578,19 +2579,21 @@ function App() {
             {theme === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
         </div>
-      </aside>
+      </Box>
 
-      <div className="main-area">
-        <header className="app-header">
-          <div className="header-left">
+      <Box className="main-area">
+        <Flex as="header" className="app-header">
+          <Box className="header-left">
             <h2>{pageTitle[page]}</h2>
-            <p>Data-first interface for stocks, portfolios, and retirement planning.</p>
-          </div>
-          <div className="header-right">
-            <button type="button" className="icon-btn" aria-label="Notifications">
-              <BellIcon />
+            <Text as="p">Data-first interface for stocks, portfolios, and retirement planning.</Text>
+          </Box>
+          <HStack className="header-right">
+            <Box className="notif-btn-wrap" position="relative">
+              <button type="button" className="icon-btn" aria-label="Notifications">
+                <BellIcon />
+              </button>
               <span className="notif-badge">3</span>
-            </button>
+            </Box>
             <div className="avatar-dropdown-wrapper" ref={dropdownRef}>
               <button type="button" className="avatar-btn" onClick={() => setDropdownOpen((v) => !v)}>
                 <div className="avatar">JL</div>
@@ -2623,8 +2626,8 @@ function App() {
                 </div>
               )}
             </div>
-          </div>
-        </header>
+          </HStack>
+        </Flex>
 
         <div className="content-area">
           {page === 'dashboard' && dashboardView}
@@ -2634,8 +2637,8 @@ function App() {
           {page === 'contributions' && contributionsView}
           {page === 'learning' && learningView}
         </div>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   )
 }
 
