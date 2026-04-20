@@ -7,13 +7,6 @@ const config = defineConfig({
       letterSpacing: '-0.01em',
     },
   },
-  theme: {
-    tokens: {
-      radii: {
-        xl: { value: '16px' },
-      },
-    },
-  },
 })
 
 export const system = createSystem(defaultConfig, config)

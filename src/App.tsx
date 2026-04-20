@@ -2588,7 +2588,7 @@ function App() {
             <Text as="p">Data-first interface for stocks, portfolios, and retirement planning.</Text>
           </Box>
           <HStack className="header-right">
-            <Box className="notif-btn-wrap">
+            <Box className="notif-btn-wrap" position="relative">
               <IconButton type="button" className="icon-btn" aria-label="Notifications" variant="outline" size="sm">
                 <BellIcon />
               </IconButton>
