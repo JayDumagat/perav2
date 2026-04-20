@@ -7,6 +7,9 @@ import App from './App.tsx'
 const theme = createTheme({
   typography: {
     fontFamily: `'Inter', 'Segoe UI', system-ui, sans-serif`,
+    allVariants: {
+      letterSpacing: '-0.01em',
+    },
   },
 })
 
