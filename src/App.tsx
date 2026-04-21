@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import './App.css'
 
 type Theme = 'light' | 'dark'
@@ -24,6 +24,26 @@ type DashboardActivity = {
   time: string
   amount: number
   direction: 'in' | 'out'
+}
+type DashboardPersona = 'individual' | 'employer' | 'admin'
+type AllowedProduct = {
+  name: string
+  category: string
+  maxRisk: string
+}
+type DashboardPersonaConfig = {
+  label: string
+  subtitle: string
+  summaryTag: string
+  accountOverviewTitle: string
+  tradingLabel: string
+  peraLabel: string
+  managedLabel: string
+  riskLabel: string
+  riskAppetite: number
+  riskSummary: string
+  quickActions: QuickAction[]
+  allowedProducts: AllowedProduct[]
 }
 
 function parseTheme(value: string | null): Theme | null {
@@ -439,6 +459,78 @@ const dashboardQuickActions: QuickAction[] = [
   { label: 'Invest in Products', detail: 'Allocate to managed baskets', icon: '📦' },
   { label: 'Contribute to PERA', detail: 'Boost retirement target', icon: '🎯', primary: true },
 ]
+const dashboardPersonaConfig: Record<DashboardPersona, DashboardPersonaConfig> = {
+  individual: {
+    label: 'Individual / Employee / OFW',
+    subtitle: 'Personal trading and PERA account workspace',
+    summaryTag: 'Personal investor view',
+    accountOverviewTitle: 'Personal Account Overview',
+    tradingLabel: 'Trading',
+    peraLabel: 'PERA (Aggregated)',
+    managedLabel: 'Managed Portfolios',
+    riskLabel: 'Balanced',
+    riskAppetite: 64,
+    riskSummary: 'Suitable for long-term growth with moderate volatility.',
+    quickActions: dashboardQuickActions,
+    allowedProducts: [
+      { name: 'PERA Core Retirement Fund', category: 'PERA', maxRisk: 'Balanced' },
+      { name: 'Dividend Income PH', category: 'Managed Basket', maxRisk: 'Balanced' },
+      { name: 'PSE Blue Chip Core', category: 'Managed Basket', maxRisk: 'Moderate Growth' },
+      { name: 'Corporate Bond Ladder', category: 'Fixed Income', maxRisk: 'Balanced' },
+      { name: 'Peso Money Market Plus', category: 'Cash Management', maxRisk: 'Conservative' },
+    ],
+  },
+  employer: {
+    label: 'Employer',
+    subtitle: 'Company-sponsored investment and employee PERA view',
+    summaryTag: 'Employer operations view',
+    accountOverviewTitle: 'Employer Funding Overview',
+    tradingLabel: 'Treasury Trading',
+    peraLabel: 'Employee PERA Sponsorship',
+    managedLabel: 'Company Managed Pools',
+    riskLabel: 'Conservative',
+    riskAppetite: 38,
+    riskSummary: 'Prioritizes capital preservation and stable employee benefit outcomes.',
+    quickActions: [
+      { label: 'Fund Payroll Wallet', detail: 'Move cash for contributions', icon: '💳', primary: true },
+      { label: 'Bulk PERA Upload', detail: 'Upload employee allocation file', icon: '📤' },
+      { label: 'Review Compliance', detail: 'Validate contribution records', icon: '🧾' },
+      { label: 'Approve Disbursement', detail: 'Release scheduled payouts', icon: '✅' },
+    ],
+    allowedProducts: [
+      { name: 'Capital Preservation PERA Fund', category: 'PERA', maxRisk: 'Conservative' },
+      { name: 'Short-Term Gov Bond Basket', category: 'Fixed Income', maxRisk: 'Conservative' },
+      { name: 'Balanced Income PH', category: 'Managed Basket', maxRisk: 'Balanced' },
+      { name: 'Liquidity Buffer Fund', category: 'Cash Management', maxRisk: 'Conservative' },
+    ],
+  },
+  admin: {
+    label: 'Admin',
+    subtitle: 'Platform-level supervision for client portfolios and controls',
+    summaryTag: 'Platform administration view',
+    accountOverviewTitle: 'Platform Account Overview',
+    tradingLabel: 'Platform Liquidity',
+    peraLabel: 'Custodied PERA Accounts',
+    managedLabel: 'Managed Program Oversight',
+    riskLabel: 'Moderate',
+    riskAppetite: 52,
+    riskSummary: 'Balances growth mandates and platform-wide risk controls.',
+    quickActions: [
+      { label: 'Approve New Product', detail: 'Publish to marketplace', icon: '🛡️', primary: true },
+      { label: 'Review Risk Limits', detail: 'Check account exposure flags', icon: '📉' },
+      { label: 'Audit Activity', detail: 'Inspect recent platform actions', icon: '🔎' },
+      { label: 'Broadcast Notice', detail: 'Send market advisory', icon: '📣' },
+    ],
+    allowedProducts: [
+      { name: 'Admin Balanced Model', category: 'Managed Basket', maxRisk: 'Moderate' },
+      { name: 'Tier-1 Equity Basket', category: 'Managed Basket', maxRisk: 'Moderate Growth' },
+      { name: 'Regulated Bond Core', category: 'Fixed Income', maxRisk: 'Moderate' },
+      { name: 'Platform Reserve Sleeve', category: 'Cash Management', maxRisk: 'Conservative' },
+      { name: 'PERA Oversight Composite', category: 'PERA', maxRisk: 'Moderate' },
+      { name: 'Compliance Approved ETF Set', category: 'ETF', maxRisk: 'Moderate Growth' },
+    ],
+  },
+}
 
 type ManualContribution = {
   id: string
@@ -789,6 +881,7 @@ function App() {
   const [dashboardFilter, setDashboardFilter] = useState<DashboardAccountFilter>('All')
   const [sponsoredIndex, setSponsoredIndex] = useState(0)
   const [isSponsoredPaused, setIsSponsoredPaused] = useState(false)
+  const [dashboardPersona, setDashboardPersona] = useState<DashboardPersona>('individual')
   const [showPeraAccounts, setShowPeraAccounts] = useState(false)
   const [showManagedPortfolios, setShowManagedPortfolios] = useState(false)
   const [selectedManagedPortfolioId, setSelectedManagedPortfolioId] = useState(managedPortfolios[0].id)
@@ -1315,6 +1408,18 @@ function App() {
     return 'evening'
   }, [])
   const activeSponsoredContent = sponsoredContents[sponsoredIndex]
+  const activeDashboardPersona = dashboardPersonaConfig[dashboardPersona]
+  const headerSubtitle =
+    page === 'dashboard'
+      ? `${activeDashboardPersona.label} · ${activeDashboardPersona.subtitle}`
+      : 'Data-first interface for stocks, portfolios, and retirement planning.'
+  const riskChartData = useMemo(
+    () => [
+      { name: 'Allowed', value: activeDashboardPersona.riskAppetite },
+      { name: 'Remaining', value: 100 - activeDashboardPersona.riskAppetite },
+    ],
+    [activeDashboardPersona.riskAppetite],
+  )
   function resumeSponsoredCarousel() {
     sponsoredElapsedRef.current = 0
     setIsSponsoredPaused(false)
@@ -1354,10 +1459,25 @@ function App() {
 
   const dashboardView = (
     <div className="grid dashboard-unified fintech-dashboard">
+      <section className="card span-3 dashboard-view-mode-card">
+        <div className="heading-row">
+          <h3>Dashboard View Mode</h3>
+          <span className="summary-anchor">{activeDashboardPersona.summaryTag}</span>
+        </div>
+        <div className="segment dashboard-view-segment">
+          {(Object.entries(dashboardPersonaConfig) as [DashboardPersona, DashboardPersonaConfig][]).map(([persona, config]) => (
+            <button key={persona} type="button" className={dashboardPersona === persona ? 'active' : ''} onClick={() => setDashboardPersona(persona)}>
+              {config.label}
+            </button>
+          ))}
+        </div>
+        <p className="dashboard-view-note">{activeDashboardPersona.subtitle}</p>
+      </section>
+
       <section className="card span-2 dashboard-summary-card">
         <div className="dashboard-summary-top">
           <h3>Net Worth Summary</h3>
-          <span className="summary-anchor">Live consolidated view</span>
+          <span className="summary-anchor">{activeDashboardPersona.summaryTag}</span>
         </div>
         <strong>₱{totalNetWorth.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
         <div className="dashboard-summary-metrics">
@@ -1438,7 +1558,7 @@ function App() {
       <section className="card span-3 dashboard-action-bar">
         <h3>Quick Actions</h3>
         <div className="dashboard-action-buttons">
-          {dashboardQuickActions.map((action) => (
+          {activeDashboardPersona.quickActions.map((action) => (
             <button key={action.label} type="button" className={action.primary ? 'primary' : ''}>
               <span>{action.icon}</span>
               <div>
@@ -1519,11 +1639,11 @@ function App() {
       </section>
 
       <section className="card span-3 dashboard-money-card">
-        <h3>Account Overview</h3>
+        <h3>{activeDashboardPersona.accountOverviewTitle}</h3>
         <div className="money-group-grid">
           <article className="money-group money-group--trading">
             <div className="money-group-head">
-              <h4>Trading</h4>
+              <h4>{activeDashboardPersona.tradingLabel}</h4>
               <button type="button" className="primary">Trade</button>
             </div>
             <p className="money-total">₱{tradingMarketValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
@@ -1545,7 +1665,7 @@ function App() {
 
           <article className="money-group money-group--pera">
             <div className="money-group-head">
-              <h4>PERA (Aggregated)</h4>
+              <h4>{activeDashboardPersona.peraLabel}</h4>
               <button type="button" onClick={() => setShowPeraAccounts((value) => !value)}>
                 {showPeraAccounts ? 'Hide accounts' : 'Expand to view'}
               </button>
@@ -1578,7 +1698,7 @@ function App() {
 
           <article className="money-group money-group--managed">
             <div className="money-group-head">
-              <h4>Managed Portfolios</h4>
+              <h4>{activeDashboardPersona.managedLabel}</h4>
               <button type="button" className="primary" onClick={() => setShowManagedPortfolios((value) => !value)}>
                 {showManagedPortfolios ? 'Hide portfolios' : 'View portfolios'}
               </button>
@@ -1644,6 +1764,49 @@ function App() {
               <span style={{ width: `${cashExposure}%`, background: 'var(--allocation-cash-color)' }} />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="card dashboard-risk-profile-card">
+        <h3>Risk Management Profile</h3>
+        <p>{activeDashboardPersona.riskSummary}</p>
+        <div className="recharts-shell risk-half-pie-shell" aria-label={`${activeDashboardPersona.riskLabel} risk appetite`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={riskChartData}
+                dataKey="value"
+                cx="50%"
+                cy="96%"
+                startAngle={180}
+                endAngle={0}
+                innerRadius="54%"
+                outerRadius="88%"
+                stroke="none"
+              >
+                <Cell fill="var(--accent)" />
+                <Cell fill="var(--border)" />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="risk-profile-meta">
+          <strong>{activeDashboardPersona.riskAppetite}%</strong>
+          <span>{activeDashboardPersona.riskLabel} appetite</span>
+        </div>
+        <div className="risk-allowed-products-wrap">
+          <h4>Products allowed for this profile</h4>
+          <ul className="list risk-allowed-products-list">
+            {activeDashboardPersona.allowedProducts.map((product) => (
+              <li key={product.name}>
+                <div>
+                  <strong>{product.name}</strong>
+                  <p>{product.category}</p>
+                </div>
+                <small>{product.maxRisk}</small>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -2585,7 +2748,7 @@ function App() {
         <Box component="header" className="app-header">
           <Box className="header-left">
             <h2>{pageTitle[page]}</h2>
-            <Typography component="p">Data-first interface for stocks, portfolios, and retirement planning.</Typography>
+            <Typography component="p">{headerSubtitle}</Typography>
           </Box>
           <Stack direction="row" className="header-right">
             <Box className="notif-btn-wrap">

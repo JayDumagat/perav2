@@ -696,6 +696,19 @@ button.active,
   gap: 18px;
 }
 
+.dashboard-view-mode-card {
+  gap: 10px;
+}
+
+.dashboard-view-segment {
+  flex-wrap: wrap;
+}
+
+.dashboard-view-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .fintech-dashboard .card {
   border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   background: linear-gradient(165deg, var(--panel), color-mix(in srgb, var(--panel-strong) 70%, var(--panel)));
@@ -976,6 +989,7 @@ button.active,
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  align-items: start;
 }
 
 .money-group {
@@ -985,6 +999,7 @@ button.active,
   padding: 14px;
   display: grid;
   gap: 10px;
+  align-self: start;
 }
 
 .money-group-head {
@@ -1035,6 +1050,12 @@ button.active,
   padding: 8px 10px;
 }
 
+.money-expand-list {
+  max-height: 154px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .money-preview-list li small,
 .money-expand-list li span {
   color: var(--text-muted);
@@ -1068,6 +1089,58 @@ button.active,
   --allocation-bonds-color: #7c3aed;
   --allocation-cash-color: #f59e0b;
   align-content: start;
+}
+
+.dashboard-risk-profile-card {
+  align-content: start;
+  gap: 10px;
+}
+
+.risk-half-pie-shell {
+  height: 162px;
+}
+
+.risk-profile-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.risk-profile-meta strong {
+  font-size: 22px;
+  color: var(--text-strong);
+}
+
+.risk-profile-meta span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.risk-allowed-products-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.risk-allowed-products-wrap h4 {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.risk-allowed-products-list {
+  max-height: 168px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.risk-allowed-products-list li {
+  align-items: flex-start;
+}
+
+.risk-allowed-products-list small {
+  color: var(--text-muted);
 }
 
 .allocation-pie {
