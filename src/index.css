@@ -1,25 +1,27 @@
 :root {
-  --bg: #f8fafc;
+  --bg: #f3f6fb;
   --panel: #ffffff;
-  --panel-strong: #f1f5f9;
+  --panel-strong: #eff3fa;
   --text: #334155;
   --text-strong: #0f172a;
   --text-muted: #64748b;
-  --border: #dbe3ee;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --accent-muted: #dbeafe;
+  --text-soft: #8090a8;
+  --border: #d7e1ef;
+  --accent: #235de6;
+  --accent-dark: #1d4fd2;
+  --accent-muted: #dce8ff;
   --success: #16a34a;
   --success-strong: #15803d;
   --success-soft: rgba(22, 163, 74, 0.14);
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.12);
   --sidebar-bg: #ffffff;
-  --header-bg: rgba(248, 250, 252, 0.92);
+  --header-bg: rgba(255, 255, 255, 0.86);
   --header-height: 62px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
-  --shadow-md: 0 14px 32px rgba(15, 23, 42, 0.11);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 22px 42px rgba(15, 23, 42, 0.14);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
   --radius: 16px;
   --radius-sm: 10px;
   --radius-xs: 6px;
@@ -35,25 +37,27 @@
 }
 
 :root[data-theme='dark'] {
-  --bg: #020617;
+  --bg: #030813;
   --panel: #0f172a;
-  --panel-strong: #16213a;
-  --text: #cbd5e1;
+  --panel-strong: #162339;
+  --text: #d1daea;
   --text-strong: #ffffff;
-  --text-muted: #94a3b8;
-  --border: #243048;
-  --accent: #60a5fa;
-  --accent-dark: #3b82f6;
-  --accent-muted: #1e3a8a;
+  --text-muted: #97a9c4;
+  --text-soft: #7f93b2;
+  --border: #26344d;
+  --accent: #6ba8ff;
+  --accent-dark: #4a8dff;
+  --accent-muted: #1f3a77;
   --success: #4ade80;
   --success-strong: #22c55e;
   --success-soft: rgba(74, 222, 128, 0.16);
   --danger: #fb7185;
   --danger-soft: rgba(251, 113, 133, 0.16);
   --sidebar-bg: #0b1222;
-  --header-bg: rgba(11, 18, 34, 0.88);
-  --shadow: 0 8px 24px rgba(2, 6, 23, 0.5);
-  --shadow-md: 0 16px 38px rgba(2, 6, 23, 0.65);
+  --header-bg: rgba(11, 18, 34, 0.8);
+  --shadow: 0 14px 30px rgba(2, 6, 23, 0.56);
+  --shadow-md: 0 22px 42px rgba(2, 6, 23, 0.72);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 * {
